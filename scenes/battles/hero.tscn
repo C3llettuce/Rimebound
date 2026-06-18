@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3 uid="uid://b1nwec760rgdl"]
+
+[ext_resource type="Script" uid="uid://cjy5cebdefcnk" path="res://scripts/Hero.cs" id="1_w6jhc"]
+[ext_resource type="PackedScene" uid="uid://cg1vhh536rrls" path="res://scenes/battles/hero_sprite.tscn" id="2_8ns43"]
+
+[node name="hero" type="Node2D"]
+script = ExtResource("1_w6jhc")
+
+[node name="heroSprite" parent="." instance=ExtResource("2_8ns43")]

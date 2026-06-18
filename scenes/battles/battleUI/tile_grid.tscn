@@ -1,0 +1,24 @@
+[gd_scene load_steps=3 format=3 uid="uid://bnd3rc8jqi04k"]
+
+[ext_resource type="Script" uid="uid://bp630t58etqo0" path="res://scripts/TileGrid.cs" id="1_76qpu"]
+[ext_resource type="PackedScene" uid="uid://d1tres62ygbd8" path="res://scenes/battles/battleUI/tile_collider.tscn" id="1_htfa8"]
+
+[node name="tile_grid" type="Node2D"]
+script = ExtResource("1_76qpu")
+
+[node name="tile_collider" parent="." instance=ExtResource("1_htfa8")]
+
+[node name="tile_collider2" parent="." instance=ExtResource("1_htfa8")]
+position = Vector2(150, 0)
+
+[node name="tile_collider3" parent="." instance=ExtResource("1_htfa8")]
+position = Vector2(-150, 0)
+
+[node name="tile_collider4" parent="." instance=ExtResource("1_htfa8")]
+position = Vector2(0, 150)
+
+[node name="tile_collider5" parent="." instance=ExtResource("1_htfa8")]
+position = Vector2(150, 150)
+
+[node name="tile_collider6" parent="." instance=ExtResource("1_htfa8")]
+position = Vector2(-150, 150)

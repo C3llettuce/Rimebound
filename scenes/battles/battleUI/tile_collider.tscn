@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3 uid="uid://d1tres62ygbd8"]
+
+[ext_resource type="Script" uid="uid://cxwsus03sa7re" path="res://scripts/TileCollider.cs" id="1_jp2lh"]
+[ext_resource type="Texture2D" uid="uid://br0rgbve8x8ji" path="res://assets/sprites/red.png" id="2_3dwl6"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_g682o"]
+
+[node name="tile_collider" type="Node2D"]
+script = ExtResource("1_jp2lh")
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+scale = Vector2(5, 5)
+shape = SubResource("RectangleShape2D_g682o")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(1, 1, 1, 0.42745098)
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("2_3dwl6")

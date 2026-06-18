@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3 uid="uid://disbbar8gv326"]
+
+[ext_resource type="Script" uid="uid://bvworda8d6pgu" path="res://scripts/MoveUI.cs" id="1_m3y27"]
+[ext_resource type="PackedScene" uid="uid://bxf8iy522iqtn" path="res://scenes/battles/action_ui.tscn" id="2_m3y27"]
+
+[node name="MoveUI" type="Node2D"]
+script = ExtResource("1_m3y27")
+
+[node name="ActionUI" parent="." instance=ExtResource("2_m3y27")]

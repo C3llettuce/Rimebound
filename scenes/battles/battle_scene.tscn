@@ -1,0 +1,80 @@
+[gd_scene load_steps=8 format=3 uid="uid://dce1oxeuq0p7s"]
+
+[ext_resource type="Texture2D" uid="uid://cupxpfimd4sx6" path="res://assets/screens/tempbattlefield.png" id="1_g0lu4"]
+[ext_resource type="Script" uid="uid://cydae8rvpx3uf" path="res://scripts/BattleScene.cs" id="1_gvb6n"]
+[ext_resource type="PackedScene" uid="uid://dix18g253cjh1" path="res://scenes/battles/enemy_manager.tscn" id="3_vjuxw"]
+[ext_resource type="PackedScene" uid="uid://disbbar8gv326" path="res://scenes/battles/move_ui.tscn" id="4_3obht"]
+[ext_resource type="PackedScene" uid="uid://bho6xp5mpscs5" path="res://scenes/battles/battle_manager.tscn" id="5_3ki0w"]
+[ext_resource type="PackedScene" uid="uid://du8hhagtgnp4e" path="res://scenes/battles/battleUI/attack_ui.tscn" id="6_fid7t"]
+[ext_resource type="PackedScene" uid="uid://bnd3rc8jqi04k" path="res://scenes/battles/battleUI/tile_grid.tscn" id="7_rsd5w"]
+
+[node name="Battle Scene" type="Node2D"]
+script = ExtResource("1_gvb6n")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_g0lu4")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(0.9, 0.9)
+
+[node name="EnemyManager" parent="." instance=ExtResource("3_vjuxw")]
+
+[node name="battleManager" parent="." instance=ExtResource("5_3ki0w")]
+visible = false
+
+[node name="MoveUI" parent="." instance=ExtResource("4_3obht")]
+position = Vector2(-528, 315)
+
+[node name="AttackUI" parent="." instance=ExtResource("6_fid7t")]
+position = Vector2(-307, 315)
+
+[node name="AttackUI2" parent="." instance=ExtResource("6_fid7t")]
+position = Vector2(-84, 315)
+
+[node name="AttackUI3" parent="." instance=ExtResource("6_fid7t")]
+position = Vector2(136, 315)
+
+[node name="TileGridHero" parent="." instance=ExtResource("7_rsd5w")]
+position = Vector2(-365, -10)
+
+[node name="tile_collider" parent="TileGridHero" index="0"]
+tileID = 4
+
+[node name="tile_collider2" parent="TileGridHero" index="1"]
+tileID = 1
+
+[node name="tile_collider3" parent="TileGridHero" index="2"]
+tileID = 16
+
+[node name="tile_collider4" parent="TileGridHero" index="3"]
+tileID = 8
+
+[node name="tile_collider5" parent="TileGridHero" index="4"]
+tileID = 2
+
+[node name="tile_collider6" parent="TileGridHero" index="5"]
+tileID = 32
+
+[node name="TileGridEnemy" parent="." instance=ExtResource("7_rsd5w")]
+position = Vector2(360, -10)
+
+[node name="tile_collider" parent="TileGridEnemy" index="0"]
+tileID = 4
+
+[node name="tile_collider2" parent="TileGridEnemy" index="1"]
+tileID = 16
+
+[node name="tile_collider3" parent="TileGridEnemy" index="2"]
+tileID = 1
+
+[node name="tile_collider4" parent="TileGridEnemy" index="3"]
+tileID = 8
+
+[node name="tile_collider5" parent="TileGridEnemy" index="4"]
+tileID = 32
+
+[node name="tile_collider6" parent="TileGridEnemy" index="5"]
+tileID = 2
+
+[editable path="TileGridHero"]
+[editable path="TileGridEnemy"]

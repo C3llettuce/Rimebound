@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3 uid="uid://cg1vhh536rrls"]
+
+[ext_resource type="Script" uid="uid://cf02govb85p3q" path="res://scripts/HeroSprite.cs" id="1_ar6qn"]
+[ext_resource type="Texture2D" uid="uid://b1kp6qb0wct6y" path="res://assets/sprites/icon.svg" id="1_w6jhc"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_w6jhc"]
+size = Vector2(128, 128)
+
+[node name="heroSprite" type="Node2D"]
+script = ExtResource("1_ar6qn")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_w6jhc")
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("RectangleShape2D_w6jhc")
