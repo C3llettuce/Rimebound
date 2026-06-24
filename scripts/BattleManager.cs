@@ -5,14 +5,23 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
+public enum SelectMode
+{
+    Any = 7,
+    Hero = 1,
+    Enemy = 2,
+    Empty = 4
+}
+
 //Handles round to round combat as well as attack resolution and enemy AI
 public partial class BattleManager : Node2D
 {
     BattleScene battleScene; public bool isRunning = true;
     List<Actor> roundOrder;
     Actor activeActor;
-    Hero selectedHero; Enemy selectedEnemy; Attack selectedAttack;
+    Hero selectedHero; Enemy selectedEnemy; Attack selectedAttack; bool isMoving = false;
     TileCollider selectedTile;
+    public SelectMode selectMode = SelectMode.Any;
     public event EventHandler HeroUseAttack;
     private TaskCompletionSource<bool> HeroTurn = new TaskCompletionSource<bool>();
 
@@ -111,6 +120,13 @@ public partial class BattleManager : Node2D
         else if(selectedEnemy == actor) selectedEnemy = null;
     }
 
+    public void ChangeSelectMode(SelectMode sm)
+    {
+        if (selectMode == sm) return;
+        selectMode = sm;
+        if(((int)sm&(int)SelectMode.Hero)!=0){}
+    }
+
     
     public void SelectCharacter(Actor selected)
     {
@@ -142,24 +158,41 @@ public partial class BattleManager : Node2D
     {
         if(selectedTile != null) selectedTile.sprite.Visible = false;
         selectedTile = selected;
-        selectedTile.sprite.Visible = true;
-    }
+        if(selectedTile != null) selectedTile.sprite.Visible = true;
 
-    public void SelectTile(TileCollider tc, bool isHero)
-    {
-        
+        if (isMoving)
+        {
+            if(CheckValidMove(activeActor, selected.tileID)) MoveActor(activeActor, selected.tileID);
+        }
     }
 
     public bool SelectAttack(Attack atk)
     {
         if(atk != null)
         {
+            isMoving = false;
             selectedAttack = atk;
             GD.Print(selectedHero.name + " at " + selectedHero.position + "'s attack " + atk.name + " selected");
             return true;
         }
         return false;
     }
+
+    public void SelectMovement()
+    {
+        isMoving = true;
+    }
+
+    private void MoveActor(Actor movingActor, int targetPosition)
+    {
+        GD.Print(HeroTurn.TrySetResult(true));
+        movingActor.OnMove(movingActor.position, targetPosition);
+        movingActor.position = targetPosition;
+        battleScene.MoveActor(movingActor, targetPosition);
+        isMoving = false;
+    }
+
+
 
     //check if a any unit on this actor's team is already occupying the target square
     private bool CheckValidMove(Actor movingActor, int targetPosition)

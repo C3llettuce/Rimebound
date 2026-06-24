@@ -47,7 +47,7 @@ public partial class BattleScene : Node2D
         //add movement event
         moveUI.ui.GetArea().InputEvent += (a, e, c) => 
         {
-            if (ClickEventCheck(e)) {}//todo
+            if (ClickEventCheck(e)) battleManager.SelectMovement();
         };
 
         //add attack events
@@ -67,6 +67,12 @@ public partial class BattleScene : Node2D
         GenerateEnemies();
         PlaceHeroes();
         await battleManager.Init();
+    }
+
+    public void MoveActor(Actor movingActor, int newGridPosition)
+    {
+        if(movingActor is Hero) movingActor.GlobalPosition = heroPositions[(int)MathF.Log2(newGridPosition)];
+        else movingActor.GlobalPosition = enemyPositions[(int)MathF.Log2(newGridPosition)];
     }
 
     //place heroes onto battle scene
@@ -133,6 +139,7 @@ public partial class BattleScene : Node2D
             };
         }
     }
+
 
     /// <summary>
     /// Gets the hero node at a given grid position

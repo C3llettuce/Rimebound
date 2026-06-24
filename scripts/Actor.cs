@@ -54,4 +54,6 @@ public partial class Actor : Node2D
         //remove from battlemanager/scene lists
         //hide and deactivate sprite + collider
     }
+
+    public virtual void OnMove(int from, int to){}
 }
