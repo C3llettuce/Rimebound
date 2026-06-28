@@ -82,16 +82,22 @@ public partial class BattleScene : Node2D
         var heroScene = GD.Load<PackedScene>("res://scenes/battles/hero.tscn");
         Node2D heroInstance1 = (Node2D)heroScene.Instantiate();
         Node2D heroInstance2 = (Node2D)heroScene.Instantiate();
+        Node2D heroInstance3 = (Node2D)heroScene.Instantiate();
         AddChild(heroInstance1);
         AddChild(heroInstance2);
+        AddChild(heroInstance3);
         Hero tempBandit = heroInstance1 as Hero;
         Hero tempHunter = heroInstance2 as Hero;
+        Hero tempDoomsayer = heroInstance3 as Hero;
         tempBandit.Init(HeroType.Bandit, 1, this);
         tempBandit.GlobalPosition = heroPositions[0];
         tempHunter.Init(HeroType.Hunter, 16, this);
         tempHunter.GlobalPosition = heroPositions[4];
+        tempDoomsayer.Init(HeroType.Doomsayer, 4, this);
+        tempDoomsayer.GlobalPosition = heroPositions[2];
         heroes.Add(tempBandit);
         heroes.Add(tempHunter);
+        heroes.Add(tempDoomsayer);
 
         //add click events to heros that update move UI
         foreach(Hero h in heroes)

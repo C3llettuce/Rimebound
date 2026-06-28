@@ -30,6 +30,14 @@ public partial class Hero : Actor
             speed = 7;
             health = 8;
             attacks.Add(new Attack("Arrow", StatusType.None, 0, 60, 63, 10));
+            attacks.Add(new Attack("Snare", StatusType.Snare, 3, 63, 0));
+            break;
+
+            case HeroType.Doomsayer:
+            name = "Doomsayer";
+            speed = 10;
+            health = 7;
+            attacks.Add(new Attack("Portend", StatusType.Mark, 3, 63, 1));
             break;
         }
     }

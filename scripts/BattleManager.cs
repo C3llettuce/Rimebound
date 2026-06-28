@@ -24,6 +24,7 @@ public partial class BattleManager : Node2D
     public SelectMode selectMode = SelectMode.Any;
     public event EventHandler HeroUseAttack;
     private TaskCompletionSource<bool> HeroTurn = new TaskCompletionSource<bool>();
+    private int[] adjacencies = {6, 9, 25, 38,36, 24};
 
 
     public async Task Init()
@@ -88,7 +89,11 @@ public partial class BattleManager : Node2D
         for(int i = 0; i < roundOrder.Count; i++)
         {
             activeActor = roundOrder[i];
+            //call start turn for next actor in initiative
+            if(activeActor != null){activeActor.TurnStart();}
+            //run enemy ai if enemy
             if(roundOrder[i] is Enemy) CalculateEnemyTargets(roundOrder[i] as Enemy);
+            //otherwise wait for player input w/ async task if hero
             else if(roundOrder[i] is Hero)
             {
                 GD.Print(activeActor.name + "'s turn");
@@ -97,6 +102,11 @@ public partial class BattleManager : Node2D
             }
             if(!isRunning) break;
         }
+    }
+
+    private void EndActorTurn()
+    {
+        activeActor.TurnEnd();
     }
 
     public void KillActor(Actor actor)
@@ -142,6 +152,7 @@ public partial class BattleManager : Node2D
             if(selectedEnemy == selected as Enemy && selectedAttack != null && activeActor == selectedHero && CheckValidAttack(selectedAttack, selectedHero, selectedEnemy))
             {
                 selectedAttack.Use(selectedEnemy, selectedHero);
+                EndActorTurn();
                 GD.Print(HeroTurn.TrySetResult(true));
                 selectedEnemy = null;
             } 
@@ -183,31 +194,52 @@ public partial class BattleManager : Node2D
         isMoving = true;
     }
 
-    private void MoveActor(Actor movingActor, int targetPosition)
+    private void MoveActor(Actor movingActor, int targetPosition, bool isFree = false)
     {
-        GD.Print(HeroTurn.TrySetResult(true));
         movingActor.OnMove(movingActor.position, targetPosition);
         movingActor.position = targetPosition;
         battleScene.MoveActor(movingActor, targetPosition);
-        isMoving = false;
+         isMoving = false;
+        if (!isFree)
+        {
+            activeActor.TurnEnd();
+            if(activeActor is Hero) GD.Print(HeroTurn.TrySetResult(true));
+        }
+       
     }
 
-
-
-    //check if a any unit on this actor's team is already occupying the target square
-    private bool CheckValidMove(Actor movingActor, int targetPosition)
+    private int GetValidMove(Actor movingActor, int targetPosition,bool teleport = false)
     {
-        bool valid = true;
+        //check if selected tile is adjacent. log is inneficient and should be stored in a dict or something but idc rn
+        if (!teleport)
+        {
+            if((adjacencies[(int)MathF.Log2(movingActor.position)]&targetPosition)==0) return 0;
+        }
         if(movingActor is Hero)
         {
-            foreach(Actor a in battleScene.heroes) if(a.position == targetPosition) valid = false;
+            foreach(Actor a in battleScene.heroes)
+            {
+                if((a.position & targetPosition) != 0) targetPosition -= a.position;
+                if(targetPosition == 0) return 0;
+            } 
         }
         else
         {
-            foreach(Actor a in battleScene.enemies) if(a.position == targetPosition) valid = false;
+            foreach(Actor a in battleScene.enemies)
+            {
+                if((a.position & targetPosition) != 0) targetPosition -= a.position;
+                if(targetPosition == 0) return 0;
+            }  
         }   
-        return valid;
+        return targetPosition;
     }
+
+    private bool CheckValidMove(Actor movingActor, int targetPosition,bool teleport = false)
+    {
+        if (GetValidMove(movingActor, targetPosition, teleport) != 0) return true;
+        return false;
+    }
+
 
     private bool CheckValidAttack(Attack atk, int usePosition, int targetPosition)
     {
@@ -216,6 +248,7 @@ public partial class BattleManager : Node2D
     }
     private bool CheckValidAttack(Attack atk, Actor user, Actor target) { return CheckValidAttack(atk, user.position, target.position); }
 
+    //check if an actor has any usable attacks based on current position
     private bool AnyValidAttack(Actor actor, bool isHero)
     {
         int targetableTiles = 0;
@@ -230,7 +263,21 @@ public partial class BattleManager : Node2D
         return false;
     }
 
+    //check if an attack has any valid targets, regardless of user position
+    private bool AnyValidTarget(Attack attack, bool isHero)
+    {
+        List<Actor> targets;
+        if (isHero) targets = battleScene.enemies.Cast<Actor>() as List<Actor>;
+        else targets = battleScene.heroes.Cast<Actor>() as List<Actor>;
+        foreach(Actor a in targets)
+        {
+            if((a.position & attack.targetPosition)!=0) return true;
+        }
+        return false;
+    }
 
+
+    //run a given enemy's entire turn. may need to split up into multiple functions later
     private void CalculateEnemyTargets(Enemy enemy)
     {
         int occupiedTiles = 0;
@@ -246,6 +293,7 @@ public partial class BattleManager : Node2D
         //iterate through attacks randomly until we hit one with at least 1 valid target
         while (!validAttack)
         {
+            //should add options for priority attacks
             if(enemyAttacks.Count == 0) break;
             atk = enemyAttacks[rand.Next(enemyAttacks.Count)];
             if((atk.usePosition & enemy.position) != 0 && (atk.targetPosition & occupiedTiles) != 0) validAttack = true;
@@ -272,5 +320,51 @@ public partial class BattleManager : Node2D
         {
             //move code here
         }
+        //call relevant turn end stuff
+        activeActor.TurnEnd();
+    }
+
+    private void CalculateEnemyMovement(Enemy enemy)
+    {
+        Random rand = new Random();
+        int validMoves = adjacencies[(int)MathF.Log2(enemy.position)];
+        int allSmartMoves = 0;
+        List<Attack> enemyAttacks = enemy.attacks.ToList();
+        foreach(Attack a in enemyAttacks)
+        {
+            int potentialMove = validMoves & a.usePosition;
+            if (potentialMove != 0)
+            {
+                potentialMove = GetValidMove(enemy, potentialMove, true);
+                if (AnyValidTarget(a,false)) allSmartMoves = allSmartMoves|potentialMove;
+            }
+        }
+        //if there is a move that would allow an attack next turn, go there
+        if(allSmartMoves != 0)
+        {
+            List<int> smartMoves = GetSplitPosition(allSmartMoves);
+            MoveActor(enemy, smartMoves[rand.Next(smartMoves.Count)]);
+        }
+        //otherwise go to a random adjacent space (should try to look 1 step into the future)
+        else
+        {
+            validMoves = GetValidMove(enemy, validMoves, true);
+            if(validMoves == 0) return;
+            List<int> randMoves = GetSplitPosition(validMoves);
+            MoveActor(enemy, randMoves[rand.Next(randMoves.Count)]);
+        }
+        
+    }
+
+    private List<int> GetSplitPosition(int positions)
+    {
+        List<int> splitPositions = new List<int>();
+        while(positions > 0)
+        {
+            int minBit = positions & -positions;
+            splitPositions.Add(minBit);
+            positions -= minBit;
+        }
+        return splitPositions;
     }
 }

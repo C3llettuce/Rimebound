@@ -32,7 +32,7 @@ public class Attack
     public void Use(Actor target, Actor user)
     {
         Debug.WriteLine(user.name + " using Attack " + name + " on " + target.name);
-        if(status != 0) target.addStatus([((int)status, statusDuration)]);
+        if(status != 0) target.AddStatus([(status, statusDuration)]);
         target.ChangeHealth(damage);
     }
 }
