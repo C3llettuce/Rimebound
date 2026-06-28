@@ -13,6 +13,10 @@ public partial class AttackUI : Node2D
 
     public void UpdateText(Attack atk)
     {
+        if(atk == null){
+            ui.UpdateText("");
+            return;
+        }
         this.atk = atk;
         string s = atk.name + "\n" + "Damage: " + atk.damage;
         if(atk.status != 0) s += " Add " + atk.status + "(" + atk.statusDuration + " turns)";

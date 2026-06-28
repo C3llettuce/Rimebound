@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 public enum EnemyType
 {
-    Bandit = 0, Wolf = 1, Starspawn = 2
+    Bandit = 0, BanditArcher = 1, Wolf = 2, Starspawn = 10
 }
 public partial class Enemy : Actor
 {
@@ -31,6 +31,12 @@ public partial class Enemy : Actor
             health = 10;
             attacks.Add(new Attack("Stab", StatusType.None, 0, 63, 3, 3));
             attacks.Add(new Attack("Shank", StatusType.None, 0, 63, 48, 2));
+            break;
+            case EnemyType.BanditArcher:
+            name = "Bandit Archer (E)";
+            speed = 4;
+            health = 8;
+            attacks.Add(new Attack("Arrow", StatusType.None, 0, 48, 63, 1));
             break;
         }
     }

@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 public enum StatusType
 {
-    None = 0, Mark = 1, Snare = 2, Empowered = 3, Defended = 4, Weak = 5, Starstruck = 6
+    None = 0, Mark = 1, Snare = 2, Empowered = 3, Defended = 4, Weak = 5, Bleeding = 6, Brave = 7, Starstruck = 8
 }
 
 public partial class Actor : Node2D
@@ -31,17 +31,11 @@ public partial class Actor : Node2D
         }
     }
 
-    public bool TryMove(int targetTile)
+    public virtual void TurnStart()
     {
-        return false;
     }
 
-    public void TurnStart()
-    {
-        
-    }
-
-    public void TurnEnd()
+    public virtual bool TurnEnd()
     {
         //count down each status once. may need to adjust for stack based statuses rather than turn based ones
         foreach(int i in statuses)
@@ -51,6 +45,7 @@ public partial class Actor : Node2D
                 statuses[i] -= 1;
             }
         }
+        return false;
     }
 
     public bool AddStatus((StatusType, int)[] newStatuses)

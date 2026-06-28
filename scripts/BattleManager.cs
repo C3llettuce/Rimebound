@@ -106,8 +106,13 @@ public partial class BattleManager : Node2D
 
     private void EndActorTurn()
     {
-        activeActor.TurnEnd();
+        bool dead = activeActor.TurnEnd();
+        if(activeActor is Hero && dead == true)
+        {
+            KillActor(activeActor);
+        }
     }
+
 
     public void KillActor(Actor actor)
     {
@@ -130,6 +135,12 @@ public partial class BattleManager : Node2D
         else if(selectedEnemy == actor) selectedEnemy = null;
     }
 
+    public void HeroPanic(Hero hero)
+    {
+        //for now just kills panicker
+        KillActor(hero);
+    }
+
     public void ChangeSelectMode(SelectMode sm)
     {
         if (selectMode == sm) return;
@@ -143,13 +154,35 @@ public partial class BattleManager : Node2D
         //should add reset functions for deselecting actors
         if(selected is Hero)
         {
-            if(selected != selectedHero) selectedAttack = null;
-            selectedHero = selected as Hero;
-            GD.Print(selectedHero.name + " at " + selectedHero.position + " selected");
+            //code for using buff attacks
+            if(selectedAttack != null)
+            {
+                if(selectedAttack.isBuff && activeActor == selectedHero && CheckValidAttack(selectedAttack, selectedHero, selected))
+                {
+                    selectedAttack.Use(selected, selectedHero);
+                    EndActorTurn();
+                    GD.Print(HeroTurn.TrySetResult(true));
+                }
+                //bad redundant code here, will fix later
+                else
+                {
+                    if(selected != selectedHero) selectedAttack = null;
+                    selectedHero = selected as Hero;
+                    GD.Print(selectedHero.name + " at " + selectedHero.position + " selected");
+                }
+            }
+            else
+            {
+                if(selected != selectedHero) selectedAttack = null;
+                selectedHero = selected as Hero;
+                GD.Print(selectedHero.name + " at " + selectedHero.position + " selected");
+            }
+            //reset attack if choosing a new character
+            
         }
         else if(selected is Enemy)
         {
-            if(selectedEnemy == selected as Enemy && selectedAttack != null && activeActor == selectedHero && CheckValidAttack(selectedAttack, selectedHero, selectedEnemy))
+            if(selectedEnemy == selected as Enemy && selectedAttack != null && activeActor == selectedHero && CheckValidAttack(selectedAttack, selectedHero, selectedEnemy) && !selectedAttack.isBuff)
             {
                 selectedAttack.Use(selectedEnemy, selectedHero);
                 EndActorTurn();
@@ -183,7 +216,7 @@ public partial class BattleManager : Node2D
         {
             isMoving = false;
             selectedAttack = atk;
-            GD.Print(selectedHero.name + " at " + selectedHero.position + "'s attack " + atk.name + " selected");
+            GD.Print(selectedHero.name + " at " + selectedHero.position + "'s attack " + atk.name + " (buff: " + atk.isBuff + ") selected");
             return true;
         }
         return false;
@@ -196,20 +229,23 @@ public partial class BattleManager : Node2D
 
     private void MoveActor(Actor movingActor, int targetPosition, bool isFree = false)
     {
+        GD.Print(movingActor.name + " moved to tile " + targetPosition + " from tile " + movingActor.position);
         movingActor.OnMove(movingActor.position, targetPosition);
         movingActor.position = targetPosition;
         battleScene.MoveActor(movingActor, targetPosition);
-         isMoving = false;
+        isMoving = false;
         if (!isFree)
         {
-            activeActor.TurnEnd();
             if(activeActor is Hero) GD.Print(HeroTurn.TrySetResult(true));
+            EndActorTurn();
         }
        
     }
 
     private int GetValidMove(Actor movingActor, int targetPosition,bool teleport = false)
     {
+        //can't move if snared
+        if(movingActor.statuses[(int)StatusType.Snare]>0) return 0;
         //check if selected tile is adjacent. log is inneficient and should be stored in a dict or something but idc rn
         if (!teleport)
         {
@@ -243,8 +279,7 @@ public partial class BattleManager : Node2D
 
     private bool CheckValidAttack(Attack atk, int usePosition, int targetPosition)
     {
-        if((atk.usePosition & usePosition) != 0 && (atk.targetPosition & targetPosition) != 0) return true;
-        return false;
+        return atk.CheckValidAttack(usePosition, targetPosition);
     }
     private bool CheckValidAttack(Attack atk, Actor user, Actor target) { return CheckValidAttack(atk, user.position, target.position); }
 
@@ -253,8 +288,9 @@ public partial class BattleManager : Node2D
     {
         int targetableTiles = 0;
         List<Actor> potentialTargets;
-        if(isHero) potentialTargets = battleScene.enemies.Cast<Actor>() as List<Actor>;
-        else potentialTargets = battleScene.heroes.Cast<Actor>() as List<Actor>;
+        if(isHero) potentialTargets = battleScene.enemies.Cast<Actor>().ToList();
+        else potentialTargets = battleScene.heroes.Cast<Actor>().ToList();
+        
         foreach(Actor a in potentialTargets) targetableTiles += a.position;
         foreach(Attack atk in actor.attacks)
         {
@@ -267,8 +303,8 @@ public partial class BattleManager : Node2D
     private bool AnyValidTarget(Attack attack, bool isHero)
     {
         List<Actor> targets;
-        if (isHero) targets = battleScene.enemies.Cast<Actor>() as List<Actor>;
-        else targets = battleScene.heroes.Cast<Actor>() as List<Actor>;
+        if (isHero) targets = battleScene.enemies.Cast<Actor>().ToList();
+        else  targets = battleScene.heroes.Cast<Actor>().ToList();
         foreach(Actor a in targets)
         {
             if((a.position & attack.targetPosition)!=0) return true;
@@ -318,10 +354,11 @@ public partial class BattleManager : Node2D
         }
         else
         {
+            CalculateEnemyMovement(enemy);
             //move code here
         }
         //call relevant turn end stuff
-        activeActor.TurnEnd();
+        EndActorTurn();
     }
 
     private void CalculateEnemyMovement(Enemy enemy)

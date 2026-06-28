@@ -89,7 +89,7 @@ public partial class BattleScene : Node2D
         Hero tempBandit = heroInstance1 as Hero;
         Hero tempHunter = heroInstance2 as Hero;
         Hero tempDoomsayer = heroInstance3 as Hero;
-        tempBandit.Init(HeroType.Bandit, 1, this);
+        tempBandit.Init(HeroType.Mercenary, 1, this);
         tempBandit.GlobalPosition = heroPositions[0];
         tempHunter.Init(HeroType.Hunter, 16, this);
         tempHunter.GlobalPosition = heroPositions[4];
@@ -107,6 +107,7 @@ public partial class BattleScene : Node2D
                 if (ClickEventCheck(e))
                 {
                     Debug.WriteLine(h.attacks.Count + ", " + atkUIS.Count);
+                    foreach(AttackUI aui in atkUIS) aui.UpdateText(null);
                     for(int i = 0; i < h.attacks.Count; i++) atkUIS[i].UpdateText(h.attacks[i]);
                     moveUI.UpdateText(h);
                     battleManager.SelectCharacter(h);
@@ -122,7 +123,7 @@ public partial class BattleScene : Node2D
         var enemyScene = GD.Load<PackedScene>("res://scenes/battles/enemy.tscn");
         enemies.Clear();
         //randomize this later (or add set pool of seeded encounters)
-        for(int i =0; i < 3; i++)
+        for(int i =0; i < 2; i++)
         {
             Node2D enemyInstance = (Node2D)enemyScene.Instantiate();
             AddChild(enemyInstance);
@@ -131,6 +132,12 @@ public partial class BattleScene : Node2D
             tempEnemy.Init(EnemyType.Bandit, (int)Math.Pow(2, i), this);
             tempEnemy.GlobalPosition = enemyPositions[i];
         }
+        Node2D enemyInstance2 = (Node2D)enemyScene.Instantiate();
+        AddChild(enemyInstance2);
+		Enemy tempEnemy2 = enemyInstance2 as Enemy;
+        enemies.Add(tempEnemy2);
+        tempEnemy2.Init(EnemyType.BanditArcher, 4, this);
+        tempEnemy2.GlobalPosition = enemyPositions[2];
 
         //click events for enemies
         foreach(Enemy enemy in enemies)
@@ -176,6 +183,13 @@ public partial class BattleScene : Node2D
         battleManager.KillActor(actor);
         if(heroes.Count == 0) CombatLoss();
         else if(enemies.Count == 0) CombatWin();
+    }
+
+    public void HeroPanic(Hero hero)
+    {
+        heroes.Remove(hero);
+        battleManager.HeroPanic(hero);
+        if(heroes.Count == 0) CombatLoss();
     }
 
     //temp wincon
