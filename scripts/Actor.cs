@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 public enum StatusType
 {
-    None = 0, Mark = 1, Snare = 2, Empowered = 3, Defended = 4, Weak = 5, Bleeding = 6, Brave = 7, Starstruck = 8
+    None = 0, Mark = 1, Snare = 2, Empowered = 3, Defended = 4, Weak = 5, Bleeding = 6, Brave = 7, Tough = 8, Starstruck = 9
 }
 
 public partial class Actor : Node2D
@@ -60,7 +60,13 @@ public partial class Actor : Node2D
 
     public void ChangeHealth(int damage)
     {
-        if(statuses[(int)StatusType.Mark]>0) damage += 2;
+        //mark and tough are here instead of in attack use because I want them to trigger off of non-attack damage (for now)
+        if(statuses[(int)StatusType.Mark]>0 && damage>0) damage += 2;
+        if(statuses[(int)StatusType.Tough]>0 && damage > 0)
+        {
+            damage -=2;
+            if(damage<0) damage = 0;
+        } 
         health -= damage;
         Debug.WriteLine("HP " + (health + damage) + " -> " + health);
         if(health <= 0) Die();

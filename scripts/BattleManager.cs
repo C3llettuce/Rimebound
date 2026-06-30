@@ -125,6 +125,15 @@ public partial class BattleManager : Node2D
             } 
         }
         actor.sprite.Hide();
+        //apply morale change if hero died/panicked
+        if(actor is Hero)
+        {
+            int stress = 2;
+            //less stress for fleeing than death
+            if(actor.health>0) stress = 1;
+            foreach(Hero h in battleScene.heroes) h.ChangeMorale(stress);
+        }
+        
         //reset relavent selected things if they were tied to the dead actor
         if(selectedHero == actor)
         {
@@ -157,7 +166,8 @@ public partial class BattleManager : Node2D
             //code for using buff attacks
             if(selectedAttack != null)
             {
-                if(selectedAttack.isBuff && activeActor == selectedHero && CheckValidAttack(selectedAttack, selectedHero, selected))
+                if(selectedAttack.isBuff && activeActor == selectedHero
+                && CheckValidAttack(selectedAttack, selectedHero, selected))
                 {
                     selectedAttack.Use(selected, selectedHero);
                     EndActorTurn();
@@ -182,7 +192,8 @@ public partial class BattleManager : Node2D
         }
         else if(selected is Enemy)
         {
-            if(selectedEnemy == selected as Enemy && selectedAttack != null && activeActor == selectedHero && CheckValidAttack(selectedAttack, selectedHero, selectedEnemy) && !selectedAttack.isBuff)
+            if(selectedEnemy == selected as Enemy && selectedAttack != null && activeActor == selectedHero && !selectedAttack.isBuff
+            && CheckValidAttack(selectedAttack, selectedHero, selectedEnemy))
             {
                 selectedAttack.Use(selectedEnemy, selectedHero);
                 EndActorTurn();
@@ -202,11 +213,18 @@ public partial class BattleManager : Node2D
     {
         if(selectedTile != null) selectedTile.sprite.Visible = false;
         selectedTile = selected;
-        if(selectedTile != null) selectedTile.sprite.Visible = true;
+        selectedTile.sprite.Visible = true;
 
         if (isMoving)
         {
             if(CheckValidMove(activeActor, selected.tileID)) MoveActor(activeActor, selected.tileID);
+        }
+        else if(selectedAttack != null)
+        {
+            if(selectedAttack.isTileTargeted && activeActor == selectedHero && ((selectedAttack.isBuff && selected.isHero)||(!selectedAttack.isBuff && !selected.isHero))
+            && CheckValidAttack(selectedAttack, activeActor.position, selected.tileID)){
+                selectedAttack.Use(null, null, selected);
+            }
         }
     }
 

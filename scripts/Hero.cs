@@ -19,12 +19,18 @@ public partial class Hero : Actor
     {
         //thralled characters have no morale
         if(anima > 0) return;
+
+        int oldMorale = morale;
+        //stress defence here
+        if(stress>0 && statuses[(int)StatusType.Brave]>0) stress -= 1;
         morale -= stress;
         //clamp morale to possible range
         if (morale>10) morale = 10;
         else if (morale < 0) morale = 0;
+        
+        GD.Print(name + " at " + position + ": Morale " + oldMorale + " -> " + morale);
         //if morale reached 0, do something
-        if(morale == 0){}
+        if(morale == 0) Panic();
     }
 
     public void Init(HeroType heroType, int position, BattleScene bs)
@@ -42,24 +48,24 @@ public partial class Hero : Actor
         {
             speed = 3;
             health = 5;
-            attacks.Add(new Attack("Throw Rock", StatusType.None));
+            attacks.Add(new Attack("Throw Rock", bs, StatusType.None));
         }
         //bandit, merc, duelist
         else if(heroInit < 10)
         {
             speed = 5;
             health = 10;
-            attacks.Add(new Attack("Stab", StatusType.None, 0, 63, 3, 10));
+            attacks.Add(new Attack("Stab", bs, StatusType.None, 0, 63, 3, 10));
             if(level >= 2)
             {
                 health = 13;
-                attacks.Add(new Attack("Guard", StatusType.Defended, 2, 63, 63, 0, 0, true));
+                attacks.Add(new Attack("Guard", bs, StatusType.Defended, 2, 63, 63, 0, 0, true));
             }
             if(level >= 3)
             {
                 speed = 7;
                 health = 17;
-                attacks.Add(new Attack("Counter", StatusType.None));
+                attacks.Add(new Attack("Counter", bs, StatusType.None));
             }
         }
         //Hunter, Ranger, Slayer
@@ -67,32 +73,32 @@ public partial class Hero : Actor
         {
             speed = 7;
             health = 8;
-            attacks.Add(new Attack("Arrow", StatusType.None, 0, 60, 63, 3));
+            attacks.Add(new Attack("Arrow", bs, StatusType.None, 0, 60, 63, 3));
             if(level >= 2)
             {
                 health = 11;
-                attacks.Add(new Attack("Snare", StatusType.Snare, 3, 63, 0));
+                attacks.Add(new Attack("Snare", bs, StatusType.Snare, 3, 63, 0));
             }
             if(level >= 3)
             {
                 health = 14;
-                attacks.Add(new Attack("Slaying Shot", StatusType.None, 0, 60, 63, 2, 0, false, false, DamageType.SlayerShot));
+                attacks.Add(new Attack("Slaying Shot", bs, StatusType.None, 0, 60, 63, 2, 0, false, false, false, AttackType.SlayerShot));
             }
         }
         else if(heroInit < 30)
         {
             speed = 6;
             health = 7;
-            attacks.Add(new Attack("Portend", StatusType.Mark, 3, 63, 63, 1));
+            attacks.Add(new Attack("Portend", bs, StatusType.Mark, 3, 63, 63, 1));
             if(level >= 2)
             {
                 health = 9;
-                attacks.Add(new Attack("Predict", StatusType.Weak, 2, 63, 63, 1));
+                attacks.Add(new Attack("Predict", bs, StatusType.Weak, 2, 63, 63, 1));
             }
             if(level >= 3)
             {
                 health = 12;
-                attacks.Add(new Attack("Starfall", StatusType.None, 0, 63, 63, 0, 0, false, false, DamageType.Starfall));
+                attacks.Add(new Attack("Starfall", bs, StatusType.None, 0, 63, 63, 0, 0, false, false, true, AttackType.Starfall));
             }
         }
         //if more classes get added need an else if here instead, for now its default case though
@@ -100,16 +106,16 @@ public partial class Hero : Actor
         {
             speed = 4;
             health = 9;
-            attacks.Add(new Attack("Mend", StatusType.None, 0, 60, 63, -3, -1, true));
+            attacks.Add(new Attack("Mend", bs, StatusType.None, 0, 60, 63, -3, -1, true));
             if(level >= 2)
             {
                 health = 12;
-                attacks.Add(new Attack("Inspire", [StatusType.Empowered, StatusType.Brave], [3,3], 63, 63, 1));
+                attacks.Add(new Attack("Inspire", bs, [StatusType.Empowered, StatusType.Brave], [3,3], 63, 63, 0, 0, true));
             }
             if(level >= 3)
             {
                 health = 16;
-                attacks.Add(new Attack("Inspi", StatusType.None, 0, 63, 63, 0, 0, false, false, DamageType.Starfall));
+                attacks.Add(new Attack("Zealotry", bs, StatusType.Empowered, 3, 63, 63, 0, 0, true, true, false, AttackType.Zealotry));
             }
         }
     }

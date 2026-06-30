@@ -38,7 +38,11 @@ public partial class BattleScene : Node2D
         heroGrid = new List<TileCollider>();
         enemyGrid = new List<TileCollider>();
         foreach(Node2D tc in GetNode<TileGrid>("TileGridHero").GetChildren()){heroGrid.Add(tc as TileCollider);}
-        foreach(Node2D tc in GetNode<TileGrid>("TileGridEnemy").GetChildren()){enemyGrid.Add(tc as TileCollider);}
+        foreach(Node2D tc in GetNode<TileGrid>("TileGridEnemy").GetChildren())
+        {
+        enemyGrid.Add(tc as TileCollider);
+        (tc as TileCollider).isHero = false;
+        }
         atkUIS.Add(GetNode<AttackUI>("AttackUI"));
         atkUIS.Add(GetNode<AttackUI>("AttackUI2"));
         atkUIS.Add(GetNode<AttackUI>("AttackUI3"));
