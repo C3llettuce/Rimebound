@@ -254,8 +254,8 @@ public partial class BattleManager : Node2D
         isMoving = false;
         if (!isFree)
         {
-            if(activeActor is Hero) GD.Print(HeroTurn.TrySetResult(true));
             EndActorTurn();
+            if(activeActor is Hero) GD.Print(HeroTurn.TrySetResult(true));
         }
        
     }
@@ -263,7 +263,7 @@ public partial class BattleManager : Node2D
     private int GetValidMove(Actor movingActor, int targetPosition,bool teleport = false)
     {
         //can't move if snared
-        if(movingActor.statuses[(int)StatusType.Snare]>0) return 0;
+        if(movingActor.statuses[(int)StatusType.Snared]>0) return 0;
         //check if selected tile is adjacent. log is inneficient and should be stored in a dict or something but idc rn
         if (!teleport)
         {

@@ -19,15 +19,16 @@ public partial class Hero : Actor
     {
         //thralled characters have no morale
         if(anima > 0) return;
-
+        GD.Print(stress);
         int oldMorale = morale;
         //stress defence here
         if(stress>0 && statuses[(int)StatusType.Brave]>0) stress -= 1;
+        GD.Print(stress);
         morale -= stress;
         //clamp morale to possible range
         if (morale>10) morale = 10;
         else if (morale < 0) morale = 0;
-        
+
         GD.Print(name + " at " + position + ": Morale " + oldMorale + " -> " + morale);
         //if morale reached 0, do something
         if(morale == 0) Panic();
@@ -77,7 +78,7 @@ public partial class Hero : Actor
             if(level >= 2)
             {
                 health = 11;
-                attacks.Add(new Attack("Snare", bs, StatusType.Snare, 3, 63, 0));
+                attacks.Add(new Attack("Snare", bs, StatusType.Snared, 3, 63, 63, 0));
             }
             if(level >= 3)
             {
@@ -89,7 +90,7 @@ public partial class Hero : Actor
         {
             speed = 6;
             health = 7;
-            attacks.Add(new Attack("Portend", bs, StatusType.Mark, 3, 63, 63, 1));
+            attacks.Add(new Attack("Portend", bs, StatusType.Marked, 3, 63, 63, 1));
             if(level >= 2)
             {
                 health = 9;
@@ -144,5 +145,4 @@ public partial class Hero : Actor
     {
         bs.HeroPanic(this);
     }
-
 }

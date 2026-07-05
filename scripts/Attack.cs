@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using Godot;
 
 
 public enum AttackType
@@ -31,6 +32,7 @@ public class Attack
         this.status = status;
         this.statusDuration = statusDuration;
         this.damage = damage;
+        this.moraleDamage = moraleDamage;
         this.isBuff = isBuff;
         this.isAoe = isAoe;
         this.attackType = attackType;
@@ -74,8 +76,8 @@ public class Attack
                 tc.stateDuration = 3;
                 break;
             case AttackType.SlayerShot:
-                if (target.statuses[(int)StatusType.Mark] > 0) damage += 3;
-                if (target.statuses[(int)StatusType.Snare] > 0) damage += 3;
+                if (target.statuses[(int)StatusType.Marked] > 0) damage += 3;
+                if (target.statuses[(int)StatusType.Snared] > 0) damage += 3;
                 goto default;
 
             //default case for all attacks that deal damage to a target
@@ -87,13 +89,17 @@ public class Attack
     }
     private void BasicUse(Actor target, Actor user)
     {
+        Debug.WriteLine(user.name + " using Attack " + name + " on " + target.name);
         if(status[0] != 0)
         {
             (StatusType, int)[] statusTuples = new (StatusType, int)[status.Length];
             for(int i = 0; i< status.Length; i++) statusTuples[i] = (status[i], statusDuration[i]);
             target.AddStatus(statusTuples);
         }
-        if(target is Hero) (target as Hero).ChangeMorale(moraleDamage);
+        if(target is Hero && moraleDamage != 0)
+        {
+            (target as Hero).ChangeMorale(moraleDamage);
+        } 
         float attackDamage = damage;
         //statuses that apply to damage. Mark and tough are absent as they apply to non-attack damage as well. The same is true for brave & stress damage
         if (!isBuff)
@@ -105,6 +111,5 @@ public class Attack
         }
                
         target.ChangeHealth((int)attackDamage);
-        Debug.WriteLine(user.name + " using Attack " + name + " on " + target.name);
     }
 }

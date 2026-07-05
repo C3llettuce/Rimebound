@@ -93,11 +93,11 @@ public partial class BattleScene : Node2D
         Hero tempBandit = heroInstance1 as Hero;
         Hero tempHunter = heroInstance2 as Hero;
         Hero tempDoomsayer = heroInstance3 as Hero;
-        tempBandit.Init(HeroType.Mercenary, 1, this);
+        tempBandit.Init(HeroType.Duelist, 1, this);
         tempBandit.GlobalPosition = heroPositions[0];
-        tempHunter.Init(HeroType.Hunter, 16, this);
+        tempHunter.Init(HeroType.Slayer, 16, this);
         tempHunter.GlobalPosition = heroPositions[4];
-        tempDoomsayer.Init(HeroType.Doomsayer, 4, this);
+        tempDoomsayer.Init(HeroType.Astronomer, 4, this);
         tempDoomsayer.GlobalPosition = heroPositions[2];
         heroes.Add(tempBandit);
         heroes.Add(tempHunter);
@@ -129,19 +129,31 @@ public partial class BattleScene : Node2D
         //randomize this later (or add set pool of seeded encounters)
         for(int i =0; i < 2; i++)
         {
-            Node2D enemyInstance = (Node2D)enemyScene.Instantiate();
-            AddChild(enemyInstance);
-			Enemy tempEnemy = enemyInstance as Enemy;
-            enemies.Add(tempEnemy);
-            tempEnemy.Init(EnemyType.Bandit, (int)Math.Pow(2, i), this);
-            tempEnemy.GlobalPosition = enemyPositions[i];
+           
+            
+			
+           
+            
+            
         }
+        Node2D enemyInstance = (Node2D)enemyScene.Instantiate();
         Node2D enemyInstance2 = (Node2D)enemyScene.Instantiate();
+        Node2D stressEnemyInstance = (Node2D)enemyScene.Instantiate();
+        AddChild(enemyInstance);
         AddChild(enemyInstance2);
+        AddChild(stressEnemyInstance);
+        Enemy tempEnemy = enemyInstance as Enemy;
 		Enemy tempEnemy2 = enemyInstance2 as Enemy;
+        Enemy stressEnemy = stressEnemyInstance as Enemy;
+        enemies.Add(tempEnemy);
         enemies.Add(tempEnemy2);
+        enemies.Add(stressEnemy);
+        tempEnemy.Init(EnemyType.Bandit, 1, this);
         tempEnemy2.Init(EnemyType.BanditArcher, 4, this);
+        stressEnemy.Init(EnemyType.StarZealot, 8, this);
+        tempEnemy.GlobalPosition = enemyPositions[0];
         tempEnemy2.GlobalPosition = enemyPositions[2];
+        stressEnemy.GlobalPosition = enemyPositions[3];
 
         //click events for enemies
         foreach(Enemy enemy in enemies)
