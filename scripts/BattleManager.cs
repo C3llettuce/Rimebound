@@ -166,12 +166,18 @@ public partial class BattleManager : Node2D
             //code for using buff attacks
             if(selectedAttack != null)
             {
-                if(selectedAttack.isBuff && activeActor == selectedHero
+                if (selectedAttack.isTileTargeted)
+                {
+                    int tileID = (int)MathF.Log2(selected.position);
+                    GD.Print(MathF.Pow(2,tileID) + " =? " + battleScene.heroGrid[tileID].tileID);
+                    SelectTile(battleScene.heroGrid[tileID]);
+                }
+                else if(selectedAttack.isBuff && activeActor == selectedHero
                 && CheckValidAttack(selectedAttack, selectedHero, selected))
                 {
                     selectedAttack.Use(selected, selectedHero);
                     EndActorTurn();
-                    GD.Print(HeroTurn.TrySetResult(true));
+                    HeroTurn.TrySetResult(true);
                 }
                 //bad redundant code here, will fix later
                 else
@@ -192,12 +198,18 @@ public partial class BattleManager : Node2D
         }
         else if(selected is Enemy)
         {
-            if(selectedEnemy == selected as Enemy && selectedAttack != null && activeActor == selectedHero && !selectedAttack.isBuff
+            if (selectedAttack.isTileTargeted)
+            {
+                int tileID = (int)MathF.Log2(selected.position);
+                GD.Print(MathF.Pow(2,tileID) + " =? " + battleScene.enemyGrid[tileID].tileID);
+                SelectTile(battleScene.enemyGrid[tileID]);
+            }
+            else if(selectedEnemy == selected as Enemy && selectedAttack != null && activeActor == selectedHero && !selectedAttack.isBuff
             && CheckValidAttack(selectedAttack, selectedHero, selectedEnemy))
             {
                 selectedAttack.Use(selectedEnemy, selectedHero);
                 EndActorTurn();
-                GD.Print(HeroTurn.TrySetResult(true));
+                HeroTurn.TrySetResult(true);
                 selectedEnemy = null;
             } 
             else 
@@ -217,6 +229,7 @@ public partial class BattleManager : Node2D
 
         if (isMoving)
         {
+            GD.Print("attempting move");
             if(CheckValidMove(activeActor, selected.tileID)) MoveActor(activeActor, selected.tileID);
         }
         else if(selectedAttack != null)
@@ -224,6 +237,9 @@ public partial class BattleManager : Node2D
             if(selectedAttack.isTileTargeted && activeActor == selectedHero && ((selectedAttack.isBuff && selected.isHero)||(!selectedAttack.isBuff && !selected.isHero))
             && CheckValidAttack(selectedAttack, activeActor.position, selected.tileID)){
                 selectedAttack.Use(null, null, selected);
+                GD.Print("tile target succesful");
+                EndActorTurn();
+                HeroTurn.TrySetResult(true);
             }
         }
     }
@@ -248,16 +264,25 @@ public partial class BattleManager : Node2D
     private void MoveActor(Actor movingActor, int targetPosition, bool isFree = false)
     {
         GD.Print(movingActor.name + " moved to tile " + targetPosition + " from tile " + movingActor.position);
+        if(movingActor is Hero) foreach(Hero h in battleScene.heroes) if(h.position == targetPosition) SwapActor(h, movingActor.position);
+        if(movingActor is Enemy) foreach(Enemy e in battleScene.enemies) if(e.position == targetPosition) SwapActor(e, movingActor.position);
         movingActor.OnMove(movingActor.position, targetPosition);
         movingActor.position = targetPosition;
         battleScene.MoveActor(movingActor, targetPosition);
+        
         isMoving = false;
         if (!isFree)
         {
             EndActorTurn();
-            if(activeActor is Hero) GD.Print(HeroTurn.TrySetResult(true));
+            if(activeActor is Hero) HeroTurn.TrySetResult(true);
         }
-       
+    }
+
+    private void SwapActor(Actor swappingActor, int targetPosition)
+    {
+        swappingActor.OnMove(swappingActor.position, targetPosition);
+        swappingActor.position = targetPosition;
+        battleScene.MoveActor(swappingActor, targetPosition);
     }
 
     private int GetValidMove(Actor movingActor, int targetPosition,bool teleport = false)
@@ -273,7 +298,7 @@ public partial class BattleManager : Node2D
         {
             foreach(Actor a in battleScene.heroes)
             {
-                if((a.position & targetPosition) != 0) targetPosition -= a.position;
+                if((a.position & targetPosition) != 0 && a.statuses[(int)StatusType.Snared] != 0) targetPosition -= a.position;
                 if(targetPosition == 0) return 0;
             } 
         }
@@ -281,7 +306,7 @@ public partial class BattleManager : Node2D
         {
             foreach(Actor a in battleScene.enemies)
             {
-                if((a.position & targetPosition) != 0) targetPosition -= a.position;
+                if((a.position & targetPosition) != 0 && a.statuses[(int)StatusType.Snared] != 0) targetPosition -= a.position;
                 if(targetPosition == 0) return 0;
             }  
         }   

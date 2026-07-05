@@ -150,10 +150,10 @@ public partial class BattleScene : Node2D
         enemies.Add(stressEnemy);
         tempEnemy.Init(EnemyType.Bandit, 1, this);
         tempEnemy2.Init(EnemyType.BanditArcher, 4, this);
-        stressEnemy.Init(EnemyType.StarZealot, 8, this);
+        stressEnemy.Init(EnemyType.StarZealot, 16, this);
         tempEnemy.GlobalPosition = enemyPositions[0];
         tempEnemy2.GlobalPosition = enemyPositions[2];
-        stressEnemy.GlobalPosition = enemyPositions[3];
+        stressEnemy.GlobalPosition = enemyPositions[4];
 
         //click events for enemies
         foreach(Enemy enemy in enemies)
