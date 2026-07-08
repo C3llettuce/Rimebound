@@ -22,10 +22,17 @@ public partial class Actor : Node2D
     public List<int> statuses = new List<int>();
     public int Speed{get{return speed + speedBonus;}}
     public BattleScene bs;
+    protected DisplayMeter hpBar;
+    protected PackedScene meterScene;
 
     public override void _Ready()
     {
         base._Ready();
+        meterScene = GD.Load<PackedScene>("res://scenes/ui/display_meter.tscn");
+        Node2D hpBarNode = (Node2D)meterScene.Instantiate();
+        AddChild(hpBarNode);
+        hpBar = hpBarNode as DisplayMeter;
+        hpBar.GlobalPosition = new Vector2(hpBar.GlobalPosition.X, hpBar.GlobalPosition.Y + 45);
         for(int i =0; i<=(int)StatusType.Starstruck; i++)
         {
             statuses.Add(0);
@@ -62,6 +69,7 @@ public partial class Actor : Node2D
 
     public void ChangeHealth(int damage)
     {
+        int oldHealth = health;
         //mark and tough are here instead of in attack use because I want them to trigger off of non-attack damage (for now)
         if(statuses[(int)StatusType.Marked]>0 && damage>0) damage += 2;
         if(statuses[(int)StatusType.Tough]>0 && damage > 0)
@@ -70,6 +78,7 @@ public partial class Actor : Node2D
             if(damage<0) damage = 0;
         } 
         health -= damage;
+        hpBar.UpdateMeter(health - oldHealth);
         Debug.WriteLine("HP " + (health + damage) + " -> " + health);
         if(health <= 0) Die();
     }

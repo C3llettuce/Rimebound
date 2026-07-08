@@ -1,0 +1,29 @@
+[gd_scene load_steps=4 format=3 uid="uid://b5qo6vg66x2sh"]
+
+[ext_resource type="Script" uid="uid://dqno15jvh4mri" path="res://scripts/DisplayMeter.cs" id="1_5w8aa"]
+[ext_resource type="Texture2D" uid="uid://b1kp6qb0wct6y" path="res://assets/sprites/icon.svg" id="2_efsag"]
+[ext_resource type="Texture2D" uid="uid://br0rgbve8x8ji" path="res://assets/sprites/red.png" id="3_d5kir"]
+
+[node name="DisplayMeter" type="Node2D"]
+script = ExtResource("1_5w8aa")
+
+[node name="MeterBackdrop" type="Sprite2D" parent="."]
+scale = Vector2(1.1, 0.25)
+texture = ExtResource("2_efsag")
+
+[node name="MeterFill" type="Sprite2D" parent="."]
+scale = Vector2(0.5, 0.1)
+texture = ExtResource("3_d5kir")
+
+[node name="MeterText" type="RichTextLabel" parent="."]
+offset_left = -102.0
+offset_top = -36.0
+offset_right = 103.0
+offset_bottom = 34.0
+mouse_filter = 2
+theme_override_colors/default_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 9
+theme_override_font_sizes/normal_font_size = 22
+text = "10/10"
+horizontal_alignment = 1
+vertical_alignment = 1

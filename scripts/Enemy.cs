@@ -46,6 +46,7 @@ public partial class Enemy : Actor
             attacks.Add(new Attack("Maddening Prophecy", bs, StatusType.None, 0, 63, 15, 0, 2));
             break;
         }
+        hpBar.Init(MeterType.Health, health);
     }
     protected override void Die()
     {

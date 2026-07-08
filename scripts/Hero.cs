@@ -13,6 +13,17 @@ public partial class Hero : Actor
     public int morale = 10;
     public int anima = -1;
     public bool isLeader = false;
+    private DisplayMeter mentalBar;
+
+    public override void _Ready()
+    {
+        base._Ready();
+        Node2D mentalBarNode = (Node2D)meterScene.Instantiate();
+        AddChild(mentalBarNode);
+        mentalBar = mentalBarNode as DisplayMeter;
+        mentalBar.GlobalPosition = new Vector2(hpBar.GlobalPosition.X, mentalBar.GlobalPosition.Y + 70);   
+    }
+
 
 
     public void ChangeMorale(int stress)
@@ -30,6 +41,7 @@ public partial class Hero : Actor
         else if (morale < 0) morale = 0;
 
         GD.Print(name + " at " + position + ": Morale " + oldMorale + " -> " + morale);
+        mentalBar.UpdateMeter(morale - oldMorale);
         //if morale reached 0, do something
         if(morale == 0) Panic();
     }
@@ -119,6 +131,9 @@ public partial class Hero : Actor
                 attacks.Add(new Attack("Zealotry", bs, StatusType.Empowered, 3, 63, 63, 0, 0, true, true, false, AttackType.Zealotry));
             }
         }
+        hpBar.Init(MeterType.Health, health);
+        //will add checks for if thrall later
+        mentalBar.Init(MeterType.Morale, 10);
     }
 
     public override bool TurnEnd()
