@@ -24,15 +24,19 @@ public partial class Actor : Node2D
     public BattleScene bs;
     protected DisplayMeter hpBar;
     protected PackedScene meterScene;
+    protected PackedScene iconScene;
+    protected List<DisplayIcon> icons;
 
     public override void _Ready()
     {
         base._Ready();
         meterScene = GD.Load<PackedScene>("res://scenes/ui/display_meter.tscn");
+        iconScene = GD.Load<PackedScene>("res://scenes/ui/display_icon.tscn");
         Node2D hpBarNode = (Node2D)meterScene.Instantiate();
         AddChild(hpBarNode);
         hpBar = hpBarNode as DisplayMeter;
         hpBar.GlobalPosition = new Vector2(hpBar.GlobalPosition.X, hpBar.GlobalPosition.Y + 45);
+        icons = new List<DisplayIcon>();
         for(int i =0; i<=(int)StatusType.Starstruck; i++)
         {
             statuses.Add(0);
@@ -51,18 +55,67 @@ public partial class Actor : Node2D
             if(statuses[i]>0)
             {
                 statuses[i] -= 1;
+                //remove ui icon
+                if(statuses[i] == 0)
+                {
+                    icons.Remove(FetchStatusIcon((StatusType)i));
+                    
+                }
             }
         }
+        ArrangeIcons();
         return false;
+    }
+
+    private DisplayIcon AddStatusIcon(StatusType type, int duration)
+    {
+        Node2D newIconNode = (Node2D)iconScene.Instantiate();
+        AddChild(newIconNode);
+        DisplayIcon newIcon = newIconNode as DisplayIcon;
+        newIcon.Init(type, duration);
+        icons.Add(newIcon);
+        return newIcon;
+    }
+
+    private DisplayIcon FetchStatusIcon(StatusType status, int duration = 0)
+    {
+        foreach(DisplayIcon di in icons) if(di.type == status) return di;
+        return AddStatusIcon(status, duration);
+    }
+
+    private void ArrangeIcons()
+    {
+        int perRow = 3;
+        int rows = -(-icons.Count/perRow); //I think this gives ceiling instead of floor if I remember my int division right
+        //GD.Print(rows);
+        for(int i = 0; i < icons.Count; i++)
+        {
+            DisplayIcon di = icons[i];
+            //no clue if this works tbh
+            di.Position = new Vector2(-50 + 50*(i%perRow), -50*rows + 50*(i/perRow));
+        }
     }
 
     public bool AddStatus((StatusType, int)[] newStatuses)
     {
         for(int i = 0; i < newStatuses.Length; i++)
         {
-            GD.Print(newStatuses[i].Item1);
-            statuses[(int)newStatuses[i].Item1] += newStatuses[i].Item2;
+            StatusType currentStatus = newStatuses[i].Item1;
+            int currentDuration = newStatuses[i].Item2;
+            GD.Print(currentStatus);
+            if(statuses[(int)currentStatus] > 0)
+            {
+                //add new icon to list
+                AddStatusIcon(currentStatus, currentDuration);
+            }
+            else
+            {
+                //increase counter of existing icon
+                FetchStatusIcon(currentStatus).UpdateLabel(currentDuration);
+            }
+            statuses[(int)currentStatus] += currentDuration;
         }
+        ArrangeIcons();
         //bool return is for if/when immunities/resist chances are implemented
         return true;
     }
@@ -70,7 +123,7 @@ public partial class Actor : Node2D
     public void ChangeHealth(int damage)
     {
         int oldHealth = health;
-        //mark and tough are here instead of in attack use because I want them to trigger off of non-attack damage (for now)
+        //mark and tough are here instead of in attack use because I want them to also trigger off of non-attack damage (for now)
         if(statuses[(int)StatusType.Marked]>0 && damage>0) damage += 2;
         if(statuses[(int)StatusType.Tough]>0 && damage > 0)
         {
