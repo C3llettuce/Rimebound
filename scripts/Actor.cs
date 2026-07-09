@@ -54,12 +54,15 @@ public partial class Actor : Node2D
         {
             if(statuses[i]>0)
             {
+                DisplayIcon toRemove = FetchStatusIcon((StatusType)i);
+                toRemove.UpdateLabel(-1);
                 statuses[i] -= 1;
                 //remove ui icon
                 if(statuses[i] == 0)
                 {
-                    icons.Remove(FetchStatusIcon((StatusType)i));
-                    
+                    icons.Remove(toRemove);
+                    toRemove.QueueFree();
+                    ArrangeIcons();
                 }
             }
         }
@@ -86,7 +89,7 @@ public partial class Actor : Node2D
     private void ArrangeIcons()
     {
         int perRow = 3;
-        int rows = -(-icons.Count/perRow); //I think this gives ceiling instead of floor if I remember my int division right
+        int rows = (int)MathF.Ceiling((float)icons.Count/perRow);
         //GD.Print(rows);
         for(int i = 0; i < icons.Count; i++)
         {
@@ -102,17 +105,10 @@ public partial class Actor : Node2D
         {
             StatusType currentStatus = newStatuses[i].Item1;
             int currentDuration = newStatuses[i].Item2;
-            GD.Print(currentStatus);
-            if(statuses[(int)currentStatus] > 0)
-            {
-                //add new icon to list
-                AddStatusIcon(currentStatus, currentDuration);
-            }
-            else
-            {
-                //increase counter of existing icon
-                FetchStatusIcon(currentStatus).UpdateLabel(currentDuration);
-            }
+            //add/increment status ui icons
+            if(statuses[(int)currentStatus] > 0) FetchStatusIcon(currentStatus).UpdateLabel(currentDuration);
+            else AddStatusIcon(currentStatus, currentDuration);
+            
             statuses[(int)currentStatus] += currentDuration;
         }
         ArrangeIcons();
@@ -138,6 +134,7 @@ public partial class Actor : Node2D
 
     protected virtual void Die()
     {
+        hpBar.QueueFree();
         bs.KillActor(this);
         //remove from battlemanager/scene lists
         //hide and deactivate sprite + collider

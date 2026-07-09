@@ -198,6 +198,7 @@ public partial class BattleManager : Node2D
         }
         else if(selected is Enemy)
         {
+            //check if attack is null first to avoid error
             if (selectedAttack.isTileTargeted)
             {
                 int tileID = (int)MathF.Log2(selected.position);

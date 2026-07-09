@@ -150,10 +150,10 @@ public partial class Hero : Actor
 
     protected override void Die()
     {
+        mentalBar.QueueFree();
         base.Die();
         //curse transition goes here
         if(isLeader){};
-        Debug.Write(" hero");
     }
 
     protected void Panic()

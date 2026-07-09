@@ -127,15 +127,6 @@ public partial class BattleScene : Node2D
         var enemyScene = GD.Load<PackedScene>("res://scenes/battles/enemy.tscn");
         enemies.Clear();
         //randomize this later (or add set pool of seeded encounters)
-        for(int i =0; i < 2; i++)
-        {
-           
-            
-			
-           
-            
-            
-        }
         Node2D enemyInstance = (Node2D)enemyScene.Instantiate();
         Node2D enemyInstance2 = (Node2D)enemyScene.Instantiate();
         Node2D stressEnemyInstance = (Node2D)enemyScene.Instantiate();
@@ -168,7 +159,6 @@ public partial class BattleScene : Node2D
             };
         }
     }
-
 
     /// <summary>
     /// Gets the hero node at a given grid position
