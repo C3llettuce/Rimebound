@@ -26,6 +26,7 @@ public partial class Actor : Node2D
     protected PackedScene meterScene;
     protected PackedScene iconScene;
     protected List<DisplayIcon> icons;
+    protected Sprite2D highlightSprite;
 
     public override void _Ready()
     {
@@ -36,6 +37,7 @@ public partial class Actor : Node2D
         AddChild(hpBarNode);
         hpBar = hpBarNode as DisplayMeter;
         hpBar.GlobalPosition = new Vector2(hpBar.GlobalPosition.X, hpBar.GlobalPosition.Y + 45);
+        highlightSprite = GetNode<Sprite2D>("highlight");
         icons = new List<DisplayIcon>();
         for(int i =0; i<=(int)StatusType.Starstruck; i++)
         {
@@ -45,10 +47,12 @@ public partial class Actor : Node2D
 
     public virtual void TurnStart()
     {
+        highlightSprite.Visible = true;
     }
 
     public virtual bool TurnEnd()
     {
+        highlightSprite.Visible = false;
         //count down each status once. may need to adjust for stack based statuses rather than turn based ones
         for(int i = statuses.Count - 1; i>=0; i--)
         {

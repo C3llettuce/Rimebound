@@ -214,6 +214,12 @@ public partial class BattleManager : Node2D
                     HeroTurn.TrySetResult(true);
                     selectedEnemy = null;
                 } 
+                //duplicate code here, fix later, maybe a goto or smthn
+                else 
+                {
+                selectedEnemy = selected as Enemy;
+                GD.Print(selectedEnemy.name + " at " + selectedEnemy.position + " selected");
+                }
             }
             else 
             {
