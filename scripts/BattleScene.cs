@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 public partial class BattleScene : Node2D
 {
     EnemyManager enemyManager;
+    public TargetingUI targetingUI;
     public MoveUI moveUI;
     public List<AttackUI> atkUIS;
     public ActionUI passUI;
@@ -17,6 +18,7 @@ public partial class BattleScene : Node2D
     public List<TileCollider> heroGrid, enemyGrid;
     Vector2[] heroPositions = {new Vector2(-215, -10), new Vector2(-215, 145), new Vector2(-365, -10), new Vector2(-365, 145), new Vector2(-515, -10), new Vector2(-515, 145)};
     Vector2[] enemyPositions = {new Vector2(215, -10), new Vector2(215, 145), new Vector2(365, -10), new Vector2(365, 145), new Vector2(515, -10), new Vector2(515, 145)};
+    int yPosOffset = -50;
     BattleManager battleManager;
 
     public bool ClickEventCheck(InputEvent e)
@@ -27,11 +29,15 @@ public partial class BattleScene : Node2D
     public override async void _Ready()
     {
         base._Ready();
+        //temp adjusting of set position vars for debugging and ui testing
+        for(int i =0; i< heroPositions.Length; i++) heroPositions[i].Y += yPosOffset;
+        for(int i =0; i< enemyPositions.Length; i++) enemyPositions[i].Y += yPosOffset;
         //initialize variables and fetch child nodes from scene
         heroes = new List<Hero>();
         enemies = new List<Enemy>();
         battleManager = GetNode<BattleManager>("battleManager");
         enemyManager = GetNode<EnemyManager>("EnemyManager");
+        targetingUI = GetNode<TargetingUI>("TargetingUI");
         moveUI = GetNode<MoveUI>("MoveUI");
         Debug.WriteLine(moveUI.Name);
         atkUIS = new List<AttackUI>();

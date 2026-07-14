@@ -198,21 +198,23 @@ public partial class BattleManager : Node2D
         }
         else if(selected is Enemy)
         {
-            //check if attack is null first to avoid error
-            if (selectedAttack.isTileTargeted)
+            if(selectedAttack != null)
             {
-                int tileID = (int)MathF.Log2(selected.position);
-                GD.Print(MathF.Pow(2,tileID) + " =? " + battleScene.enemyGrid[tileID].tileID);
-                SelectTile(battleScene.enemyGrid[tileID]);
+                if (selectedAttack.isTileTargeted)
+                {
+                    int tileID = (int)MathF.Log2(selected.position);
+                    GD.Print(MathF.Pow(2,tileID) + " =? " + battleScene.enemyGrid[tileID].tileID);
+                    SelectTile(battleScene.enemyGrid[tileID]);
+                }
+                else if(selectedEnemy == selected as Enemy && activeActor == selectedHero && !selectedAttack.isBuff
+                && CheckValidAttack(selectedAttack, selectedHero, selectedEnemy))
+                {
+                    selectedAttack.Use(selectedEnemy, selectedHero);
+                    EndActorTurn();
+                    HeroTurn.TrySetResult(true);
+                    selectedEnemy = null;
+                } 
             }
-            else if(selectedEnemy == selected as Enemy && selectedAttack != null && activeActor == selectedHero && !selectedAttack.isBuff
-            && CheckValidAttack(selectedAttack, selectedHero, selectedEnemy))
-            {
-                selectedAttack.Use(selectedEnemy, selectedHero);
-                EndActorTurn();
-                HeroTurn.TrySetResult(true);
-                selectedEnemy = null;
-            } 
             else 
             {
             selectedEnemy = selected as Enemy;
@@ -249,6 +251,7 @@ public partial class BattleManager : Node2D
     {
         if(atk != null)
         {
+            battleScene.targetingUI.PreviewAttack(atk);
             isMoving = false;
             selectedAttack = atk;
             GD.Print(selectedHero.name + " at " + selectedHero.position + "'s attack " + atk.name + " (buff: " + atk.isBuff + ") selected");
