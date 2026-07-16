@@ -16,6 +16,8 @@ public partial class BattleScene : Node2D
     public ActionUI passUI;
     public List<Hero> heroes; public List<Enemy> enemies;
     public List<TileCollider> heroGrid, enemyGrid;
+    public int resolutionScale = 1;
+    public Vector2 baseResolution = new Vector2(0,0);
     Vector2[] heroPositions = {new Vector2(-215, -10), new Vector2(-215, 145), new Vector2(-365, -10), new Vector2(-365, 145), new Vector2(-515, -10), new Vector2(-515, 145)};
     Vector2[] enemyPositions = {new Vector2(215, -10), new Vector2(215, 145), new Vector2(365, -10), new Vector2(365, 145), new Vector2(515, -10), new Vector2(515, 145)};
     int yPosOffset = -50;
@@ -88,26 +90,38 @@ public partial class BattleScene : Node2D
     //place heroes onto battle scene
     void PlaceHeroes()
     {
+        GD.Print("hi");
     //make this pull from a roster later
         var heroScene = GD.Load<PackedScene>("res://scenes/battles/hero.tscn");
-        Node2D heroInstance1 = (Node2D)heroScene.Instantiate();
-        Node2D heroInstance2 = (Node2D)heroScene.Instantiate();
-        Node2D heroInstance3 = (Node2D)heroScene.Instantiate();
-        AddChild(heroInstance1);
-        AddChild(heroInstance2);
-        AddChild(heroInstance3);
-        Hero tempBandit = heroInstance1 as Hero;
-        Hero tempHunter = heroInstance2 as Hero;
-        Hero tempDoomsayer = heroInstance3 as Hero;
-        tempBandit.Init(HeroType.Duelist, 1, this, 1);
-        tempBandit.GlobalPosition = heroPositions[0];
-        tempHunter.Init(HeroType.Slayer, 16, this, 5);
-        tempHunter.GlobalPosition = heroPositions[4];
-        tempDoomsayer.Init(HeroType.Astronomer, 4, this);
-        tempDoomsayer.GlobalPosition = heroPositions[2];
-        heroes.Add(tempBandit);
-        heroes.Add(tempHunter);
-        heroes.Add(tempDoomsayer);
+        List<Hero> tempH = RunManager.Instance.LoadHeroes();
+        foreach(Hero h in tempH) AddChild(h);
+
+        for(int i = 0; i<tempH.Count && i<6; i++)
+        {
+            heroes.Add(tempH[i]);
+            tempH[i].Init((int)MathF.Pow(2,i), this);
+            tempH[i].GlobalPosition = heroPositions[i];
+            GD.Print("adding new hero");
+        }
+
+        // Node2D heroInstance1 = (Node2D)heroScene.Instantiate();
+        // Node2D heroInstance2 = (Node2D)heroScene.Instantiate();
+        // Node2D heroInstance3 = (Node2D)heroScene.Instantiate();
+        // AddChild(heroInstance1);
+        // AddChild(heroInstance2);
+        // AddChild(heroInstance3);
+        // Hero tempBandit = heroInstance1 as Hero;
+        // Hero tempHunter = heroInstance2 as Hero;
+        // Hero tempDoomsayer = heroInstance3 as Hero;
+        // tempBandit.Init(HeroType.Duelist, 1, this, 1);
+        // tempBandit.GlobalPosition = heroPositions[0];
+        // tempHunter.Init(HeroType.Slayer, 16, this, 5);
+        // tempHunter.GlobalPosition = heroPositions[4];
+        // tempDoomsayer.Init(HeroType.Astronomer, 4, this);
+        // tempDoomsayer.GlobalPosition = heroPositions[2];
+        // heroes.Add(tempBandit);
+        // heroes.Add(tempHunter);
+        // heroes.Add(tempDoomsayer);
 
         //add click events to heros that update move UI
         foreach(Hero h in heroes)

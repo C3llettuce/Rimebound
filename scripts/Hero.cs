@@ -16,6 +16,7 @@ public partial class Hero : Actor
     private DisplayMeter mentalBar;
     private Texture2D defaultTexture;
     private Texture2D thrallTexture;
+    public HeroData hData;
 
     public override void _Ready()
     {
@@ -48,10 +49,16 @@ public partial class Hero : Actor
         if(morale == 0) Panic();
     }
 
-    public void Init(HeroType heroType, int position, BattleScene bs, int startingAnima = -1)
+    public void Init(int position, BattleScene bs)
+    {
+        Init(hData.Class, position, bs, hData.Anima, hData.Leader);
+    }
+
+    public void Init(HeroType heroType, int position, BattleScene bs, int startingAnima = -1, bool isLeader = false)
     {
         anima = startingAnima;
-        isFriendly = false;
+        isFriendly = true;
+        this.isLeader = isLeader;
         this.heroType = heroType;
         this.position = position;
         this.bs = bs;

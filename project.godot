@@ -11,9 +11,13 @@ config_version=5
 [application]
 
 config/name="Rimebound"
-run/main_scene="uid://dce1oxeuq0p7s"
+run/main_scene="uid://b4efd5uqwb6uu"
 config/features=PackedStringArray("4.5", "C#", "Forward Plus")
 config/icon="res://assets/sprites/icon.svg"
+
+[autoload]
+
+RunManager="*res://scripts/RunManager.cs"
 
 [dotnet]
 
