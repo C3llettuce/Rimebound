@@ -99,7 +99,7 @@ public partial class BattleScene : Node2D
         Hero tempBandit = heroInstance1 as Hero;
         Hero tempHunter = heroInstance2 as Hero;
         Hero tempDoomsayer = heroInstance3 as Hero;
-        tempBandit.Init(HeroType.Duelist, 1, this);
+        tempBandit.Init(HeroType.Duelist, 1, this, 1);
         tempBandit.GlobalPosition = heroPositions[0];
         tempHunter.Init(HeroType.Slayer, 16, this);
         tempHunter.GlobalPosition = heroPositions[4];

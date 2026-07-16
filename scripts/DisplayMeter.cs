@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Data;
+using System.Diagnostics.Metrics;
 
 
 public enum MeterType
@@ -19,6 +20,7 @@ public partial class DisplayMeter : Node2D
     private float meterFillWidthMax;
     private float meterFillWidth;
     private float fillWidth;
+    private bool altColor;
 
     public override void _Ready()
     {
@@ -29,15 +31,24 @@ public partial class DisplayMeter : Node2D
         base._Ready();
     }
 
-    public void Init(MeterType meterType, int meterMax, int meterValue)
+    public void Init(MeterType meterType, int meterMax, int meterValue, bool altColor = false)
     {
         this.meterType = meterType;
         this.meterMax = meterMax;
         this.meterValue = meterValue;
+        if(altColor)
+        {
+            meterFill.Visible = false;
+            meterFill = GetNode<Sprite2D>("MeterFill2");
+            meterFill.Visible = true;
+            meterFillWidthMax = meterFill.Transform.Scale.X;
+            fillWidth = meterFill.Texture.GetWidth()*meterFillWidthMax;
+            
+        }
         UpdateMeter();
     }
 
-    public void Init(MeterType meterType, int meterMax){Init(meterType, meterMax, meterMax);}
+    public void Init(MeterType meterType, int meterMax, bool altColor = false){Init(meterType, meterMax, meterMax, altColor);}
 
     public void ResetMeter(){}
 

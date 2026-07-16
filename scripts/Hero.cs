@@ -46,8 +46,9 @@ public partial class Hero : Actor
         if(morale == 0) Panic();
     }
 
-    public void Init(HeroType heroType, int position, BattleScene bs)
+    public void Init(HeroType heroType, int position, BattleScene bs, int startingAnima = -1)
     {
+        anima = startingAnima;
         isFriendly = false;
         this.heroType = heroType;
         this.position = position;
@@ -86,6 +87,9 @@ public partial class Hero : Actor
         {
             speed = 7;
             health = 8;
+            sprite.sprite2D.Texture = GD.Load<Texture2D>("res://assets/sprites/tempArcher.png");
+            sprite.sprite2D.Scale *= .3f;
+            sprite.sprite2D.Position = new Vector2(sprite.sprite2D.Position.X+15, sprite.sprite2D.Position.Y - 30);
             attacks.Add(new Attack("Arrow", bs, StatusType.None, 0, 60, 63, 3));
             if(level >= 2)
             {
@@ -133,15 +137,22 @@ public partial class Hero : Actor
         }
         hpBar.Init(MeterType.Health, health);
         //will add checks for if thrall later
-        mentalBar.Init(MeterType.Morale, 10);
+        if(startingAnima > 0) mentalBar.Init(MeterType.Anima, startingAnima, true);
+        else mentalBar.Init(MeterType.Morale, 10);
     }
 
     public override bool TurnEnd()
     {
         base.TurnEnd();
-        if(anima > 0) anima -=1;
+        if(anima > 0)
+        {
+            anima -=1;
+            GD.Print("anima: " + anima);
+            mentalBar.UpdateMeter(-1);
+        } 
         if(anima == 0)
         {
+            Die();
             return true;
         }
         return false;

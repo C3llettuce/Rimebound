@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://b5qo6vg66x2sh"]
+[gd_scene load_steps=5 format=3 uid="uid://b5qo6vg66x2sh"]
 
 [ext_resource type="Script" uid="uid://dqno15jvh4mri" path="res://scripts/DisplayMeter.cs" id="1_5w8aa"]
 [ext_resource type="Texture2D" uid="uid://b1kp6qb0wct6y" path="res://assets/sprites/icon.svg" id="2_efsag"]
 [ext_resource type="Texture2D" uid="uid://br0rgbve8x8ji" path="res://assets/sprites/red.png" id="3_d5kir"]
+[ext_resource type="Texture2D" uid="uid://b08306pku0fr2" path="res://assets/sprites/blue.png" id="4_efsag"]
 
 [node name="DisplayMeter" type="Node2D"]
 script = ExtResource("1_5w8aa")
@@ -14,6 +15,11 @@ texture = ExtResource("2_efsag")
 [node name="MeterFill" type="Sprite2D" parent="."]
 scale = Vector2(0.5, 0.1)
 texture = ExtResource("3_d5kir")
+
+[node name="MeterFill2" type="Sprite2D" parent="."]
+visible = false
+scale = Vector2(6.25, 1.25)
+texture = ExtResource("4_efsag")
 
 [node name="MeterText" type="RichTextLabel" parent="."]
 offset_left = -102.0

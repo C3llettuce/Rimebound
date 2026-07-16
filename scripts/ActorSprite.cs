@@ -4,7 +4,7 @@ using System;
 public partial class ActorSprite : Node
 {
     protected Actor parent;
-    protected Sprite2D sprite2D;
+    public Sprite2D sprite2D;
     protected Area2D spriteCollider;
     public override void _Ready()
     {
