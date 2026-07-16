@@ -14,6 +14,8 @@ public partial class Hero : Actor
     public int anima = -1;
     public bool isLeader = false;
     private DisplayMeter mentalBar;
+    private Texture2D defaultTexture;
+    private Texture2D thrallTexture;
 
     public override void _Ready()
     {
@@ -87,9 +89,8 @@ public partial class Hero : Actor
         {
             speed = 7;
             health = 8;
-            sprite.sprite2D.Texture = GD.Load<Texture2D>("res://assets/sprites/tempArcher.png");
-            sprite.sprite2D.Scale *= .3f;
-            sprite.sprite2D.Position = new Vector2(sprite.sprite2D.Position.X+15, sprite.sprite2D.Position.Y - 30);
+            defaultTexture = GD.Load<Texture2D>("res://assets/sprites/tempArcher.png");
+            thrallTexture = GD.Load<Texture2D>("res://assets/sprites/tempThrallArcher.png");
             attacks.Add(new Attack("Arrow", bs, StatusType.None, 0, 60, 63, 3));
             if(level >= 2)
             {
@@ -135,8 +136,17 @@ public partial class Hero : Actor
                 attacks.Add(new Attack("Zealotry", bs, StatusType.Empowered, 3, 63, 63, 0, 0, true, true, false, AttackType.Zealotry));
             }
         }
+
+        if(defaultTexture != null && thrallTexture != null)
+        {
+            if(anima == -1) sprite.sprite2D.Texture = defaultTexture;
+            else sprite.sprite2D.Texture = thrallTexture;
+            sprite.sprite2D.Scale *= .3f;
+            sprite.sprite2D.Position = new Vector2(sprite.sprite2D.Position.X+15, sprite.sprite2D.Position.Y - 30);
+        }
+        
+
         hpBar.Init(MeterType.Health, health);
-        //will add checks for if thrall later
         if(startingAnima > 0) mentalBar.Init(MeterType.Anima, startingAnima, true);
         else mentalBar.Init(MeterType.Morale, 10);
     }
@@ -158,7 +168,10 @@ public partial class Hero : Actor
         return false;
     }
 
-
+    public void Enthrall()
+    {
+        sprite.sprite2D.Texture = thrallTexture;
+    }
     protected override void Die()
     {
         mentalBar.QueueFree();
