@@ -1,0 +1,33 @@
+[gd_scene load_steps=4 format=3 uid="uid://clupaqxkexgrd"]
+
+[ext_resource type="Texture2D" uid="uid://b08306pku0fr2" path="res://assets/sprites/blue.png" id="1_1jrou"]
+[ext_resource type="Script" uid="uid://cuihco6ngm4tc" path="res://scripts/EventScene.cs" id="1_d7f6o"]
+[ext_resource type="PackedScene" uid="uid://cpwjip2bawnvf" path="res://scenes/events/event_button.tscn" id="3_dlgd8"]
+
+[node name="EventScene" type="Node2D" node_paths=PackedStringArray("options", "eventDescription", "test")]
+script = ExtResource("1_d7f6o")
+options = [NodePath("EventButton"), NodePath("EventButton2"), NodePath("EventButton3")]
+eventDescription = NodePath("EventDescription")
+test = NodePath("")
+
+[node name="Background" type="Sprite2D" parent="."]
+scale = Vector2(58, 32.15)
+texture = ExtResource("1_1jrou")
+
+[node name="EventDescription" type="RichTextLabel" parent="."]
+offset_left = -451.0
+offset_top = -317.0
+offset_right = 455.0
+offset_bottom = -147.0
+
+[node name="EventButton" parent="." instance=ExtResource("3_dlgd8")]
+position = Vector2(0, 92)
+
+[node name="EventButton2" parent="." instance=ExtResource("3_dlgd8")]
+position = Vector2(0, -69)
+
+[node name="EventButton3" parent="." instance=ExtResource("3_dlgd8")]
+position = Vector2(0, 240)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(0.9, 0.9)

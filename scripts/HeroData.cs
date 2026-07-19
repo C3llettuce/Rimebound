@@ -17,8 +17,18 @@ public partial class HeroData : RefCounted
         Leader = leader;
     }
     public HeroType Class { get; }
-    public int HP { get; }
-    public int Morale { get; }
-    public int Anima { get; }
+    public int HP { get; set;}
+    public int Morale { get; set;}
+    public int Anima { get; set;}
     public bool Leader { get; }
+
+    public override string ToString()
+    {
+        string s = "";
+        if(Leader) s += "Leader ";
+        s += Class + ", HP: " + HP;
+        if(Anima<0) s += ", Morale: " + Morale;
+        else s += ", Anima: " + Anima;
+        return s;
+    }
 }

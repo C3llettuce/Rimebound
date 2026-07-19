@@ -1,0 +1,33 @@
+[gd_scene load_steps=4 format=3 uid="uid://cpwjip2bawnvf"]
+
+[ext_resource type="Script" uid="uid://b4q3il0o5q43l" path="res://scripts/EventButton.cs" id="1_qp8r8"]
+[ext_resource type="Texture2D" uid="uid://b1kp6qb0wct6y" path="res://assets/sprites/icon.svg" id="1_s1m31"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_qp8r8"]
+size = Vector2(897, 122)
+
+[node name="EventButton" type="Node2D" node_paths=PackedStringArray("clickArea", "textLabel")]
+script = ExtResource("1_qp8r8")
+clickArea = NodePath("Area2D")
+textLabel = NodePath("EventText")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(7, 1)
+texture = ExtResource("1_s1m31")
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+position = Vector2(-0.5, 1)
+shape = SubResource("RectangleShape2D_qp8r8")
+
+[node name="EventText" type="RichTextLabel" parent="."]
+offset_left = -416.0
+offset_top = -51.0
+offset_right = 419.0
+offset_bottom = 54.0
+mouse_filter = 2
+text = "Temp Event
+"
+horizontal_alignment = 1
+vertical_alignment = 1
