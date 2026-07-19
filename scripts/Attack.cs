@@ -3,13 +3,18 @@ using System.Diagnostics;
 using Godot;
 
 
+//mix between specific attacks and general groupings of edge cases
 public enum AttackType
 {
     None = 0,
     SlayerShot = 1,
     Starfall = 2,
     Zealotry = 3,
-    Supplicate = 4
+    Supplicate = 4,
+    Advancing = 5,
+    Retreating = 6,
+    Pushing = 7,
+    Pulling = 8
 
 }
 
@@ -25,9 +30,10 @@ public class Attack
     public bool isAoe;
     public bool isTileTargeted;
     private AttackType attackType;
+    public Actor owner;
     public int animaSpend;
 
-    public Attack(string name, BattleScene bs, StatusType[] status = null, int[] statusDuration = null, int usePosition = 63, int targetPosition = 63, int damage = 1, int moraleDamage = 0, bool isBuff = false, bool isAoe = false, bool isTileTargeted = false, AttackType attackType = AttackType.None, int animaSpend = 0)
+    public Attack(string name, BattleScene bs, Actor owner, StatusType[] status = null, int[] statusDuration = null, int usePosition = 63, int targetPosition = 63, int damage = 1, int moraleDamage = 0, bool isBuff = false, bool isAoe = false, bool isTileTargeted = false, AttackType attackType = AttackType.None, int animaSpend = 0)
     {
         this.name = name;
         this.bs = bs;
@@ -44,17 +50,31 @@ public class Attack
         this.animaSpend = animaSpend;
     }
     //constructor for single/no status attacks
-    public Attack(string name, BattleScene bs, StatusType status = 0, int statusDuration = 0, int usePosition = 63, int targetPosition = 63, int damage = 1, int moraleDamage = 0, bool isBuff = false, bool isAoe = false, bool isTileTargeted = false, AttackType attackType = AttackType.None, int animaSpend = 0):
-    this(name, bs, [status], [statusDuration], usePosition, targetPosition, damage, moraleDamage, isBuff, isAoe, isTileTargeted, attackType, animaSpend){}
+    public Attack(string name, BattleScene bs, Actor owner, StatusType status = 0, int statusDuration = 0, int usePosition = 63, int targetPosition = 63, int damage = 1, int moraleDamage = 0, bool isBuff = false, bool isAoe = false, bool isTileTargeted = false, AttackType attackType = AttackType.None, int animaSpend = 0):
+    this(name, bs, owner, [status], [statusDuration], usePosition, targetPosition, damage, moraleDamage, isBuff, isAoe, isTileTargeted, attackType, animaSpend){}
 
     //check here instead of in b-mngr to allow for uncluttered special cases (maybe should just give each attack its own class? idk)
     public bool CheckValidAttack(int usePosition, int targetPosition)
     {
+        List<Actor> userAllies = bs.GetUnitsAsActors(owner.isFriendly);
+        List<Actor> userEnemies = bs.GetUnitsAsActors(!owner.isFriendly);
         switch (attackType)
         {
             //supplicate should only work if targeting another thralled hero, for now no basic usePos/targetPos bit check as it should always be any
             case AttackType.Supplicate:
                 foreach(Hero h in bs.heroes) if(h.position == targetPosition && h.position != usePosition && h.anima > 0) return true;
+                break;
+            case AttackType.Advancing:
+                if(usePosition > 3 && owner.statuses[(int)StatusType.Snared] == 0)
+                {
+                    foreach(Actor a in userAllies) if(a.position == usePosition/4 && a.statuses[(int)StatusType.Snared] == 0) goto default;
+                }
+                break;
+            case AttackType.Retreating:
+                if(usePosition < 32 && owner.statuses[(int)StatusType.Snared] == 0)
+                {
+                    foreach(Actor a in userAllies) if(a.position == usePosition*4 && a.statuses[(int)StatusType.Snared] == 0) goto default;
+                }
                 break;
             case AttackType.Starfall:
             //default case for targetting a specific tile from a tile
@@ -75,6 +95,7 @@ public class Attack
 
     public void Use(Actor target = null, Actor user = null, TileCollider tc = null)
     {
+        BattleManager bm = bs.battleManager;
         switch (attackType)
         {
             case AttackType.Zealotry:
@@ -92,6 +113,18 @@ public class Attack
                 (user as Hero).ChangeAnima(3);
                 (target as Hero).ChangeAnima(-2);
                 break;
+            case AttackType.Advancing:
+                bm.MoveActor(owner, owner.position/4, true);
+                goto default;
+            case AttackType.Retreating:
+                bm.MoveActor(owner, owner.position*4, true);
+                goto default;
+            case AttackType.Pushing:
+                if (target.position < 32) if(bm.GetValidMove(target, target.position*4, true)!=0) bm.MoveActor(target, target.position*4, true);
+                goto default;
+            case AttackType.Pulling:
+                if (target.position > 3) if(bm.GetValidMove(target, target.position/4, true)!=0) bm.MoveActor(target, target.position/4, true);
+                goto default;
             //default case for all attacks that deal damage to a target
             default:
                 BasicUse(target, user);

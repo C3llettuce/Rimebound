@@ -79,24 +79,24 @@ public partial class Hero : Actor
             speed = 3;
             maxHealth = 5;
             maxHealth = 5;
-            attacks.Add(new Attack("Throw Rock", bs, StatusType.None));
+            attacks.Add(new Attack("Throw Rock", bs, this, StatusType.None));
         }
         //bandit, merc, duelist
         else if(heroInit < 10)
         {
             speed = 5;
             maxHealth = 10;
-            attacks.Add(new Attack("Stab", bs, StatusType.None, 0, 63, 3, 10));
+            attacks.Add(new Attack("Stab", bs, this, StatusType.None, 0, 63, 3, 10));
             if(level >= 2)
             {
                 maxHealth = 13;
-                attacks.Add(new Attack("Guard", bs, StatusType.Defended, 2, 63, 63, 0, 0, true));
+                attacks.Add(new Attack("Guard", bs, this, StatusType.Defended, 2, 63, 63, 0, 0, true));
             }
             if(level >= 3)
             {
                 speed = 7;
                 maxHealth = 17;
-                attacks.Add(new Attack("Counter", bs, StatusType.None));
+                attacks.Add(new Attack("Counter", bs, this, StatusType.None));
             }
         }
         //Hunter, Ranger, Slayer
@@ -106,32 +106,32 @@ public partial class Hero : Actor
             maxHealth = 8;
             defaultTexture = GD.Load<Texture2D>("res://assets/sprites/tempArcher.png");
             thrallTexture = GD.Load<Texture2D>("res://assets/sprites/tempThrallArcher.png");
-            attacks.Add(new Attack("Arrow", bs, StatusType.None, 0, 60, 63, 3));
+            attacks.Add(new Attack("Arrow", bs, this, StatusType.None, 0, 60, 63, 3));
             if(level >= 2)
             {
                 maxHealth = 11;
-                attacks.Add(new Attack("Snare", bs, StatusType.Snared, 3, 63, 63, 0));
+                attacks.Add(new Attack("Snare", bs, this, StatusType.Snared, 3, 63, 63, 0));
             }
             if(level >= 3)
             {
                 maxHealth = 14;
-                attacks.Add(new Attack("Slaying Shot", bs, StatusType.None, 0, 60, 63, 2, 0, false, false, false, AttackType.SlayerShot));
+                attacks.Add(new Attack("Slaying Shot", bs, this, StatusType.None, 0, 60, 63, 2, 0, false, false, false, AttackType.SlayerShot));
             }
         }
         else if(heroInit < 30)
         {
             speed = 6;
             maxHealth = 7;
-            attacks.Add(new Attack("Portend", bs, StatusType.Marked, 3, 63, 63, 1));
+            attacks.Add(new Attack("Portend", bs, this, StatusType.Marked, 3, 63, 63, 1));
             if(level >= 2)
             {
                 maxHealth = 9;
-                attacks.Add(new Attack("Predict", bs, StatusType.Weak, 2, 63, 63, 1));
+                attacks.Add(new Attack("Predict", bs, this, StatusType.Weak, 2, 63, 63, 1));
             }
             if(level >= 3)
             {
                 maxHealth = 12;
-                attacks.Add(new Attack("Starfall", bs, StatusType.None, 0, 63, 63, 0, 0, false, false, true, AttackType.Starfall));
+                attacks.Add(new Attack("Starfall", bs, this, StatusType.None, 0, 63, 63, 0, 0, false, false, true, AttackType.Starfall));
             }
         }
         //if more classes get added need an else if here instead, for now its default case though
@@ -139,16 +139,16 @@ public partial class Hero : Actor
         {
             speed = 4;
             maxHealth = 9;
-            attacks.Add(new Attack("Mend", bs, StatusType.None, 0, 60, 63, -3, -1, true));
+            attacks.Add(new Attack("Mend", bs, this, StatusType.None, 0, 60, 63, -3, -1, true));
             if(level >= 2)
             {
                 maxHealth = 12;
-                attacks.Add(new Attack("Inspire", bs, [StatusType.Empowered, StatusType.Brave], [3,3], 63, 63, 0, 0, true));
+                attacks.Add(new Attack("Inspire", bs, this, [StatusType.Empowered, StatusType.Brave], [3,3], 63, 63, 0, 0, true));
             }
             if(level >= 3)
             {
                 maxHealth = 16;
-                attacks.Add(new Attack("Zealotry", bs, StatusType.Empowered, 3, 63, 63, 0, 0, true, true, false, AttackType.Zealotry));
+                attacks.Add(new Attack("Zealotry", bs, this, StatusType.Empowered, 3, 63, 63, 0, 0, true, true, false, AttackType.Zealotry));
             }
         }
 
@@ -180,7 +180,7 @@ public partial class Hero : Actor
         if(heroInit == 0)
         {
             maxHealth += 4;
-            attacks.Add(new Attack("Supplicate", bs, StatusType.None, 0, 63, 63, 0, -1, true, false, false, AttackType.Supplicate));
+            attacks.Add(new Attack("Supplicate", bs, this, StatusType.None, 0, 63, 63, 0, -1, true, false, false, AttackType.Supplicate));
         }
         //Bandit tree
         else if(heroInit < 10)
@@ -190,7 +190,7 @@ public partial class Hero : Actor
         //Hunter tree
         else if(heroInit < 20)
         {
-            attacks.Add(new Attack("Evil Shot", bs, StatusType.None, 0, 60, 63, 5, 0, false, false, false, AttackType.None, 1));
+            attacks.Add(new Attack("Evil Shot", bs, this, StatusType.None, 0, 60, 63, 5, 0, false, false, false, AttackType.None, 1));
         }
         //Oracle Tree
         else if(heroInit < 30)

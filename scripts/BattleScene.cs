@@ -22,7 +22,7 @@ public partial class BattleScene : Node2D
     Vector2[] heroPositions = {new Vector2(-215, -10), new Vector2(-215, 145), new Vector2(-365, -10), new Vector2(-365, 145), new Vector2(-515, -10), new Vector2(-515, 145)};
     Vector2[] enemyPositions = {new Vector2(215, -10), new Vector2(215, 145), new Vector2(365, -10), new Vector2(365, 145), new Vector2(515, -10), new Vector2(515, 145)};
     int yPosOffset = -50;
-    BattleManager battleManager;
+    public BattleManager battleManager;
 
     public bool ClickEventCheck(InputEvent e)
     {
@@ -82,12 +82,6 @@ public partial class BattleScene : Node2D
         GenerateEnemies();
         PlaceHeroes();
         await battleManager.Init();
-    }
-
-    public void MoveActor(Actor movingActor, int newGridPosition)
-    {
-        if(movingActor is Hero) movingActor.GlobalPosition = heroPositions[(int)MathF.Log2(newGridPosition)];
-        else movingActor.GlobalPosition = enemyPositions[(int)MathF.Log2(newGridPosition)];
     }
 
     //place heroes onto battle scene
@@ -174,6 +168,10 @@ public partial class BattleScene : Node2D
         }
     }
 
+    //
+    //Helpers
+    //
+
     /// <summary>
     /// Gets the hero node at a given grid position
     /// </summary>
@@ -186,6 +184,22 @@ public partial class BattleScene : Node2D
             if(h.position == position) return h;
         }
         return null;
+    }
+
+    public List<Actor> GetUnitsAsActors(bool getHeroes)
+    {
+        if(getHeroes) return heroes.Cast<Actor>().ToList();
+        else  return enemies.Cast<Actor>().ToList();
+    }
+
+    //
+    //During Combat Actions
+    //
+
+     public void MoveActor(Actor movingActor, int newGridPosition)
+    {
+        if(movingActor is Hero) movingActor.GlobalPosition = heroPositions[(int)MathF.Log2(newGridPosition)];
+        else movingActor.GlobalPosition = enemyPositions[(int)MathF.Log2(newGridPosition)];
     }
 
     //Kill an actor (hero or enemy)

@@ -270,7 +270,7 @@ public partial class BattleManager : Node2D
         isMoving = true;
     }
 
-    private void MoveActor(Actor movingActor, int targetPosition, bool isFree = false)
+    public void MoveActor(Actor movingActor, int targetPosition, bool isFree = false)
     {
         GD.Print(movingActor.name + " moved to tile " + targetPosition + " from tile " + movingActor.position);
         if(movingActor is Hero) foreach(Hero h in battleScene.heroes) if(h.position == targetPosition) SwapActor(h, movingActor.position);
@@ -294,7 +294,7 @@ public partial class BattleManager : Node2D
         battleScene.MoveActor(swappingActor, targetPosition);
     }
 
-    private int GetValidMove(Actor movingActor, int targetPosition,bool teleport = false)
+    public int GetValidMove(Actor movingActor, int targetPosition,bool teleport = false)
     {
         //can't move if snared
         if(movingActor.statuses[(int)StatusType.Snared]>0) return 0;
