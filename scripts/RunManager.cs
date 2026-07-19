@@ -34,7 +34,7 @@ public partial class RunManager: Node2D
 
     public void SetDebugHeroes()
     {
-        heroDatas.Add(new HeroData(HeroType.Slayer));
+        heroDatas.Add(new HeroData(HeroType.Slayer, -1, -1, 5));
         heroDatas.Add(new HeroData(HeroType.Duelist));
         heroDatas.Add(new HeroData(HeroType.Astronomer));
     }

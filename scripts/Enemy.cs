@@ -28,25 +28,26 @@ public partial class Enemy : Actor
             case EnemyType.Bandit:
             name = "Bandit (E)";
             speed = 5;
-            health = 10;
+            maxHealth = 10;
             attacks.Add(new Attack("Stab", bs, StatusType.None, 0, 63, 3, 3));
             attacks.Add(new Attack("Shank", bs, StatusType.None, 0, 63, 48, 2));
             break;
             case EnemyType.BanditArcher:
             name = "Bandit Archer (E)";
             speed = 4;
-            health = 8;
+            maxHealth = 8;
             attacks.Add(new Attack("Arrow", bs, StatusType.None, 0, 48, 63, 1));
             break;
             //temp morale damaging enemy for testing
             case EnemyType.StarZealot:
             name = "Starstruck Zealot";
             speed = 6;
-            health = 6;
+            maxHealth = 6;
             attacks.Add(new Attack("Maddening Prophecy", bs, StatusType.None, 0, 63, 15, 0, 2));
             break;
         }
-        hpBar.Init(MeterType.Health, health);
+        health = maxHealth;
+        hpBar.Init(MeterType.Health, maxHealth, health);
     }
     protected override void Die()
     {

@@ -12,7 +12,8 @@ public partial class BattleScene : Node2D
     EnemyManager enemyManager;
     public TargetingUI targetingUI;
     public MoveUI moveUI;
-    public List<AttackUI> atkUIS;
+    [Export] public AttackUI[] atkUIS;
+    [Export] private RichTextLabel attackDescription;
     public ActionUI passUI;
     public List<Hero> heroes; public List<Enemy> enemies;
     public List<TileCollider> heroGrid, enemyGrid;
@@ -42,7 +43,6 @@ public partial class BattleScene : Node2D
         targetingUI = GetNode<TargetingUI>("TargetingUI");
         moveUI = GetNode<MoveUI>("MoveUI");
         Debug.WriteLine(moveUI.Name);
-        atkUIS = new List<AttackUI>();
         heroGrid = new List<TileCollider>();
         enemyGrid = new List<TileCollider>();
         foreach(Node2D tc in GetNode<TileGrid>("TileGridHero").GetChildren()){heroGrid.Add(tc as TileCollider);}
@@ -51,9 +51,6 @@ public partial class BattleScene : Node2D
         enemyGrid.Add(tc as TileCollider);
         (tc as TileCollider).isHero = false;
         }
-        atkUIS.Add(GetNode<AttackUI>("AttackUI"));
-        atkUIS.Add(GetNode<AttackUI>("AttackUI2"));
-        atkUIS.Add(GetNode<AttackUI>("AttackUI3"));
 
         //add click events to relevant ui nodes
         //add movement event
@@ -64,7 +61,13 @@ public partial class BattleScene : Node2D
 
         //add attack events
         foreach(AttackUI aui in atkUIS) aui.ui.GetArea().InputEvent += (a, e, c) => {
-            if (ClickEventCheck(e)) battleManager.SelectAttack(aui.atk);
+            if (ClickEventCheck(e))
+            {
+                battleManager.SelectAttack(aui.atk);
+                targetingUI.PreviewAttack(aui.atk);
+                UpdateAttackDescription(aui.atk);
+            } 
+            
         };
 
         //add tile selection events
@@ -88,7 +91,7 @@ public partial class BattleScene : Node2D
     }
 
     //place heroes onto battle scene
-    void PlaceHeroes()
+    private void PlaceHeroes()
     {
         GD.Print("hi");
     //make this pull from a roster later
@@ -104,25 +107,6 @@ public partial class BattleScene : Node2D
             GD.Print("adding new hero");
         }
 
-        // Node2D heroInstance1 = (Node2D)heroScene.Instantiate();
-        // Node2D heroInstance2 = (Node2D)heroScene.Instantiate();
-        // Node2D heroInstance3 = (Node2D)heroScene.Instantiate();
-        // AddChild(heroInstance1);
-        // AddChild(heroInstance2);
-        // AddChild(heroInstance3);
-        // Hero tempBandit = heroInstance1 as Hero;
-        // Hero tempHunter = heroInstance2 as Hero;
-        // Hero tempDoomsayer = heroInstance3 as Hero;
-        // tempBandit.Init(HeroType.Duelist, 1, this, 1);
-        // tempBandit.GlobalPosition = heroPositions[0];
-        // tempHunter.Init(HeroType.Slayer, 16, this, 5);
-        // tempHunter.GlobalPosition = heroPositions[4];
-        // tempDoomsayer.Init(HeroType.Astronomer, 4, this);
-        // tempDoomsayer.GlobalPosition = heroPositions[2];
-        // heroes.Add(tempBandit);
-        // heroes.Add(tempHunter);
-        // heroes.Add(tempDoomsayer);
-
         //add click events to heros that update move UI
         foreach(Hero h in heroes)
         {
@@ -130,10 +114,20 @@ public partial class BattleScene : Node2D
             {
                 if (ClickEventCheck(e))
                 {
-                    Debug.WriteLine(h.attacks.Count + ", " + atkUIS.Count);
-                    foreach(AttackUI aui in atkUIS) aui.UpdateText(null);
-                    for(int i = 0; i < h.attacks.Count; i++) atkUIS[i].UpdateText(h.attacks[i]);
+                    //update buttons
+                    foreach(AttackUI aui in atkUIS) aui.Visible = true;
+                    for(int i = 0; i < atkUIS.Length; i++)
+                    {
+                        if(i<h.attacks.Count) atkUIS[i].UpdateText(h.attacks[i]);
+                        else atkUIS[i].Visible = false;
+                    }
                     moveUI.UpdateText(h);
+                    //reset ui elements
+                    if(battleManager.selectedHero != h)
+                    {
+                       attackDescription.Text = "";
+                       targetingUI.PreviewAttack(null) ;
+                    }
                     battleManager.SelectCharacter(h);
                 }
             };
@@ -216,6 +210,11 @@ public partial class BattleScene : Node2D
         heroes.Remove(hero);
         battleManager.HeroPanic(hero);
         if(heroes.Count == 0) CombatLoss();
+    }
+
+    private void UpdateAttackDescription(Attack atk)
+    {
+        attackDescription.Text = atk.GetDescription();
     }
 
     //temp wincon

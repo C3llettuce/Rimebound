@@ -19,7 +19,7 @@ public partial class BattleManager : Node2D
     BattleScene battleScene; public bool isRunning = true;
     List<Actor> roundOrder;
     Actor activeActor;
-    Hero selectedHero; Enemy selectedEnemy; Attack selectedAttack; bool isMoving = false;
+    public Hero selectedHero; Enemy selectedEnemy; Attack selectedAttack; bool isMoving = false;
     TileCollider selectedTile;
     public SelectMode selectMode = SelectMode.Any;
     public event EventHandler HeroUseAttack;
@@ -257,7 +257,6 @@ public partial class BattleManager : Node2D
     {
         if(atk != null)
         {
-            battleScene.targetingUI.PreviewAttack(atk);
             isMoving = false;
             selectedAttack = atk;
             GD.Print(selectedHero.name + " at " + selectedHero.position + "'s attack " + atk.name + " (buff: " + atk.isBuff + ") selected");

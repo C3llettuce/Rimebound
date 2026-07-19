@@ -12,6 +12,7 @@ public enum StatusType
 public partial class Actor : Node2D
 {
     public int health;
+    public int maxHealth;
     public bool isFriendly;
     public int position;
     public string name;
@@ -131,6 +132,8 @@ public partial class Actor : Node2D
             if(damage<0) damage = 0;
         } 
         health -= damage;
+        //debug messages aren't set to account for overheal, will change when needed
+        if(health > maxHealth) health = maxHealth;
         hpBar.UpdateMeter(health - oldHealth);
         Debug.WriteLine("HP " + (health + damage) + " -> " + health);
         if(health <= 0) Die();

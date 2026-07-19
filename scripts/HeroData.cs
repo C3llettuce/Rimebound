@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 public partial class HeroData : RefCounted
 {
-    public HeroData(HeroType heroType = 0, int hp = 0, int morale = 0, int anima = -1, bool leader = false)
+    //-1 indicates a value will be set to its max (or not exist for anima) on hero initialization
+    public HeroData(HeroType heroType = 0, int hp = -1, int morale = -1, int anima = -1, bool leader = false)
     {
         Class = heroType;
         HP = hp;

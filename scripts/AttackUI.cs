@@ -18,12 +18,7 @@ public partial class AttackUI : Node2D
             return;
         }
         this.atk = atk;
-        string s = atk.name + "\n" + "Damage: " + atk.damage;
-        if(atk.status[0] != 0)
-        {
-            for(int i = 0; i< atk.status.Length; i++) s += " Add " + atk.status[i] + "(" + atk.statusDuration[i] + " turns)";
-        }
-        ui.UpdateText(s);
+        ui.UpdateText(atk.name);
     }
 
     public void ResetText(){ui.ResetText();}

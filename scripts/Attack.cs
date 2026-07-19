@@ -8,7 +8,9 @@ public enum AttackType
     None = 0,
     SlayerShot = 1,
     Starfall = 2,
-    Zealotry = 3
+    Zealotry = 3,
+    Supplicate = 4
+
 }
 
 public class Attack
@@ -23,7 +25,9 @@ public class Attack
     public bool isAoe;
     public bool isTileTargeted;
     private AttackType attackType;
-    public Attack(string name, BattleScene bs, StatusType[] status = null, int[] statusDuration = null, int usePosition = 63, int targetPosition = 63, int damage = 1, int moraleDamage = 0, bool isBuff = false, bool isAoe = false, bool isTileTargeted = false, AttackType attackType = AttackType.None)
+    public int animaSpend;
+
+    public Attack(string name, BattleScene bs, StatusType[] status = null, int[] statusDuration = null, int usePosition = 63, int targetPosition = 63, int damage = 1, int moraleDamage = 0, bool isBuff = false, bool isAoe = false, bool isTileTargeted = false, AttackType attackType = AttackType.None, int animaSpend = 0)
     {
         this.name = name;
         this.bs = bs;
@@ -37,16 +41,21 @@ public class Attack
         this.isAoe = isAoe;
         this.attackType = attackType;
         this.isTileTargeted = isTileTargeted;
+        this.animaSpend = animaSpend;
     }
-    public Attack(string name, BattleScene bs, StatusType status = 0, int statusDuration = 0, int usePosition = 63, int targetPosition = 63, int damage = 1, int moraleDamage = 0, bool isBuff = false, bool isAoe = false, bool isTileTargeted = false, AttackType attackType = AttackType.None):
-    this(name, bs, [status], [statusDuration], usePosition, targetPosition, damage, moraleDamage, isBuff, isAoe, isTileTargeted, attackType){}
+    //constructor for single/no status attacks
+    public Attack(string name, BattleScene bs, StatusType status = 0, int statusDuration = 0, int usePosition = 63, int targetPosition = 63, int damage = 1, int moraleDamage = 0, bool isBuff = false, bool isAoe = false, bool isTileTargeted = false, AttackType attackType = AttackType.None, int animaSpend = 0):
+    this(name, bs, [status], [statusDuration], usePosition, targetPosition, damage, moraleDamage, isBuff, isAoe, isTileTargeted, attackType, animaSpend){}
 
     //check here instead of in b-mngr to allow for uncluttered special cases (maybe should just give each attack its own class? idk)
     public bool CheckValidAttack(int usePosition, int targetPosition)
     {
-
         switch (attackType)
         {
+            //supplicate should only work if targeting another thralled hero, for now no basic usePos/targetPos bit check as it should always be any
+            case AttackType.Supplicate:
+                foreach(Hero h in bs.heroes) if(h.position == targetPosition && h.position != usePosition && h.anima > 0) return true;
+                break;
             case AttackType.Starfall:
             //default case for targetting a specific tile from a tile
             default:
@@ -79,7 +88,10 @@ public class Attack
                 if (target.statuses[(int)StatusType.Marked] > 0) damage += 3;
                 if (target.statuses[(int)StatusType.Snared] > 0) damage += 3;
                 goto default;
-
+            case AttackType.Supplicate:
+                (user as Hero).ChangeAnima(3);
+                (target as Hero).ChangeAnima(-2);
+                break;
             //default case for all attacks that deal damage to a target
             default:
                 BasicUse(target, user);
@@ -111,5 +123,27 @@ public class Attack
         }
                
         target.ChangeHealth((int)attackDamage);
+
+        //no valid checks as currently no non-thralls/enemies should have attacks with animaSpend
+        if(animaSpend > 0) (user as Hero).ChangeAnima(animaSpend);
+    }
+
+    public string GetDescription()
+    {
+        string s = "";
+        if(animaSpend > 0) s += "Cost: " + animaSpend + " anima";
+        if(damage > 0) s += "\n" + "Damage: " + damage;
+        else if(damage < 0) s += "\n" + "Healing: " + (damage*-1);
+        if(status[0] != 0)
+        {
+            for(int i = 0; i< status.Length; i++) s += "\nAdd " + status[i] + " (" + statusDuration[i] + " turns)";
+        }
+        switch (attackType){
+            case AttackType.SlayerShot:
+                s += "\n+2 Damage if target is snared\n+2 Damage if target is marked";
+                break;
+        }
+
+        return s;
     }
 }

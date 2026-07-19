@@ -9,8 +9,10 @@
 [ext_resource type="PackedScene" uid="uid://bnd3rc8jqi04k" path="res://scenes/battles/battleUI/tile_grid.tscn" id="7_rsd5w"]
 [ext_resource type="PackedScene" uid="uid://bneh0vr1ui7da" path="res://scenes/battles/battleUI/targeting_ui.tscn" id="8_yccpy"]
 
-[node name="Battle Scene" type="Node2D"]
+[node name="Battle Scene" type="Node2D" node_paths=PackedStringArray("atkUIS", "attackDescription")]
 script = ExtResource("1_gvb6n")
+atkUIS = [NodePath("AttackUI"), NodePath("AttackUI2"), NodePath("AttackUI3"), NodePath("AttackUI4"), NodePath("AttackUI5")]
+attackDescription = NodePath("AttackDescription")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 position = Vector2(0, -51)
@@ -25,16 +27,22 @@ zoom = Vector2(0.9, 0.9)
 visible = false
 
 [node name="MoveUI" parent="." instance=ExtResource("4_3obht")]
-position = Vector2(-528, 265)
+position = Vector2(-533, 246)
 
 [node name="AttackUI" parent="." instance=ExtResource("6_fid7t")]
-position = Vector2(-307, 265)
+position = Vector2(-404, 245)
 
 [node name="AttackUI2" parent="." instance=ExtResource("6_fid7t")]
-position = Vector2(-84, 265)
+position = Vector2(-281, 246)
 
 [node name="AttackUI3" parent="." instance=ExtResource("6_fid7t")]
-position = Vector2(136, 265)
+position = Vector2(-158, 245)
+
+[node name="AttackUI4" parent="." instance=ExtResource("6_fid7t")]
+position = Vector2(-33, 245)
+
+[node name="AttackUI5" parent="." instance=ExtResource("6_fid7t")]
+position = Vector2(91, 245)
 
 [node name="TileGridHero" parent="." instance=ExtResource("7_rsd5w")]
 position = Vector2(-365, -60)
@@ -81,6 +89,13 @@ tileID = 2
 [node name="TargetingUI" parent="." instance=ExtResource("8_yccpy")]
 position = Vector2(384, 226)
 scale = Vector2(0.3, 0.3)
+
+[node name="AttackDescription" type="RichTextLabel" parent="."]
+offset_left = -465.0
+offset_top = 273.0
+offset_right = 151.0
+offset_bottom = 353.0
+vertical_alignment = 1
 
 [editable path="TileGridHero"]
 [editable path="TileGridEnemy"]

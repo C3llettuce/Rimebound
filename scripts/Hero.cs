@@ -11,6 +11,7 @@ public partial class Hero : Actor
 {
     public HeroType heroType;
     public int morale = 10;
+    public int maxMorale = 10;
     public int anima = -1;
     public bool isLeader = false;
     private DisplayMeter mentalBar;
@@ -33,11 +34,9 @@ public partial class Hero : Actor
     {
         //thralled characters have no morale
         if(anima > 0) return;
-        GD.Print(stress);
         int oldMorale = morale;
         //stress defence here
         if(stress>0 && statuses[(int)StatusType.Brave]>0) stress -= 1;
-        GD.Print(stress);
         morale -= stress;
         //clamp morale to possible range
         if (morale>10) morale = 10;
@@ -49,12 +48,20 @@ public partial class Hero : Actor
         if(morale == 0) Panic();
     }
 
-    public void Init(int position, BattleScene bs)
+    public void ChangeAnima(int animaLoss)
     {
-        Init(hData.Class, position, bs, hData.Anima, hData.Leader);
+        if(anima < 0) return;
+        anima -= animaLoss;
+        mentalBar.UpdateMeter(-animaLoss);
+        if(anima <= 0) Die();
     }
 
-    public void Init(HeroType heroType, int position, BattleScene bs, int startingAnima = -1, bool isLeader = false)
+    public void Init(int position, BattleScene bs)
+    {
+        Init(hData.Class, position, bs, hData.Anima, hData.Morale, hData.HP, hData.Leader);
+    }
+
+    public void Init(HeroType heroType, int position, BattleScene bs, int startingAnima = -1, int startingMorale = -1, int startingHealth = -1, bool isLeader = false)
     {
         anima = startingAnima;
         isFriendly = true;
@@ -70,24 +77,25 @@ public partial class Hero : Actor
         if (heroInit == 0)
         {
             speed = 3;
-            health = 5;
+            maxHealth = 5;
+            maxHealth = 5;
             attacks.Add(new Attack("Throw Rock", bs, StatusType.None));
         }
         //bandit, merc, duelist
         else if(heroInit < 10)
         {
             speed = 5;
-            health = 10;
+            maxHealth = 10;
             attacks.Add(new Attack("Stab", bs, StatusType.None, 0, 63, 3, 10));
             if(level >= 2)
             {
-                health = 13;
+                maxHealth = 13;
                 attacks.Add(new Attack("Guard", bs, StatusType.Defended, 2, 63, 63, 0, 0, true));
             }
             if(level >= 3)
             {
                 speed = 7;
-                health = 17;
+                maxHealth = 17;
                 attacks.Add(new Attack("Counter", bs, StatusType.None));
             }
         }
@@ -95,34 +103,34 @@ public partial class Hero : Actor
         else if(heroInit < 20)
         {
             speed = 7;
-            health = 8;
+            maxHealth = 8;
             defaultTexture = GD.Load<Texture2D>("res://assets/sprites/tempArcher.png");
             thrallTexture = GD.Load<Texture2D>("res://assets/sprites/tempThrallArcher.png");
             attacks.Add(new Attack("Arrow", bs, StatusType.None, 0, 60, 63, 3));
             if(level >= 2)
             {
-                health = 11;
+                maxHealth = 11;
                 attacks.Add(new Attack("Snare", bs, StatusType.Snared, 3, 63, 63, 0));
             }
             if(level >= 3)
             {
-                health = 14;
+                maxHealth = 14;
                 attacks.Add(new Attack("Slaying Shot", bs, StatusType.None, 0, 60, 63, 2, 0, false, false, false, AttackType.SlayerShot));
             }
         }
         else if(heroInit < 30)
         {
             speed = 6;
-            health = 7;
+            maxHealth = 7;
             attacks.Add(new Attack("Portend", bs, StatusType.Marked, 3, 63, 63, 1));
             if(level >= 2)
             {
-                health = 9;
+                maxHealth = 9;
                 attacks.Add(new Attack("Predict", bs, StatusType.Weak, 2, 63, 63, 1));
             }
             if(level >= 3)
             {
-                health = 12;
+                maxHealth = 12;
                 attacks.Add(new Attack("Starfall", bs, StatusType.None, 0, 63, 63, 0, 0, false, false, true, AttackType.Starfall));
             }
         }
@@ -130,16 +138,16 @@ public partial class Hero : Actor
         else
         {
             speed = 4;
-            health = 9;
+            maxHealth = 9;
             attacks.Add(new Attack("Mend", bs, StatusType.None, 0, 60, 63, -3, -1, true));
             if(level >= 2)
             {
-                health = 12;
+                maxHealth = 12;
                 attacks.Add(new Attack("Inspire", bs, [StatusType.Empowered, StatusType.Brave], [3,3], 63, 63, 0, 0, true));
             }
             if(level >= 3)
             {
-                health = 16;
+                maxHealth = 16;
                 attacks.Add(new Attack("Zealotry", bs, StatusType.Empowered, 3, 63, 63, 0, 0, true, true, false, AttackType.Zealotry));
             }
         }
@@ -152,10 +160,48 @@ public partial class Hero : Actor
             sprite.sprite2D.Position = new Vector2(sprite.sprite2D.Position.X+15, sprite.sprite2D.Position.Y - 30);
         }
         
+        //set health
+        if(startingHealth == -1) health = maxHealth;
+        else health = startingHealth;
+        //set morale
+        if(startingMorale == -1) morale = maxMorale;
+        else morale = startingMorale;
 
-        hpBar.Init(MeterType.Health, health);
-        if(startingAnima > 0) mentalBar.Init(MeterType.Anima, startingAnima, true);
-        else mentalBar.Init(MeterType.Morale, 10);
+        hpBar.Init(MeterType.Health, maxHealth, health);
+        if(startingAnima > 0) ThrallInit(startingAnima);
+        else mentalBar.Init(MeterType.Morale, maxMorale, morale);
+    }
+
+    public void ThrallInit(int startingAnima)
+    {
+        mentalBar.Init(MeterType.Anima, startingAnima, true);
+        int heroInit = (int)heroType;
+        int level = heroInit%10;
+        if(heroInit == 0)
+        {
+            maxHealth += 4;
+            attacks.Add(new Attack("Supplicate", bs, StatusType.None, 0, 63, 63, 0, -1, true, false, false, AttackType.Supplicate));
+        }
+        //Bandit tree
+        else if(heroInit < 10)
+        {
+            
+        }
+        //Hunter tree
+        else if(heroInit < 20)
+        {
+            attacks.Add(new Attack("Evil Shot", bs, StatusType.None, 0, 60, 63, 5, 0, false, false, false, AttackType.None, 1));
+        }
+        //Oracle Tree
+        else if(heroInit < 30)
+        {
+            
+        }
+        //Pilgrim tree
+        else
+        {
+            
+        }
     }
 
     public override bool TurnEnd()
@@ -174,10 +220,34 @@ public partial class Hero : Actor
         }
         return false;
     }
+    //method for instantiating a thrall units special properties on spawn
+    
 
+    //method for enthralling a unit mid combat
     public void Enthrall()
     {
-        sprite.sprite2D.Texture = thrallTexture;
+        if(thrallTexture != null) sprite.sprite2D.Texture = thrallTexture;
+        int heroInit = (int)heroType;
+        if(heroInit == 0)
+        {
+            
+        }
+        else if(heroInit < 10)
+        {
+            
+        }
+        else if(heroInit < 20)
+        {
+            
+        }
+        else if(heroInit < 30)
+        {
+            
+        }
+        else
+        {
+            
+        }
     }
     protected override void Die()
     {
