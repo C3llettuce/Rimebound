@@ -25,6 +25,8 @@ public partial class BattleManager : Node2D
     public event EventHandler HeroUseAttack;
     private TaskCompletionSource<bool> HeroTurn = new TaskCompletionSource<bool>();
     private int[] adjacencies = {6, 9, 25, 38,36, 24};
+    //I think these dicts are faster computationally than trying using log each time
+    public Dictionary<int, int> bitToID = new Dictionary<int, int>{[1] = 0, [2] = 1, [4] = 2, [8] = 3, [16] = 4, [32] = 5};
 
 
     public async Task Init()
@@ -168,9 +170,7 @@ public partial class BattleManager : Node2D
             {
                 if (selectedAttack.isTileTargeted)
                 {
-                    int tileID = (int)MathF.Log2(selected.position);
-                    GD.Print(MathF.Pow(2,tileID) + " =? " + battleScene.heroGrid[tileID].tileID);
-                    SelectTile(battleScene.heroGrid[tileID]);
+                    SelectTile(battleScene.heroGrid[bitToID[selected.position]]);
                 }
                 else if(selectedAttack.isBuff && activeActor == selectedHero
                 && CheckValidAttack(selectedAttack, selectedHero, selected))
@@ -202,9 +202,7 @@ public partial class BattleManager : Node2D
             {
                 if (selectedAttack.isTileTargeted)
                 {
-                    int tileID = (int)MathF.Log2(selected.position);
-                    GD.Print(MathF.Pow(2,tileID) + " =? " + battleScene.enemyGrid[tileID].tileID);
-                    SelectTile(battleScene.enemyGrid[tileID]);
+                    SelectTile(battleScene.enemyGrid[bitToID[selected.position]]);
                 }
                 else if(selectedEnemy == selected as Enemy && activeActor == selectedHero && !selectedAttack.isBuff
                 && CheckValidAttack(selectedAttack, selectedHero, selectedEnemy))
@@ -298,10 +296,10 @@ public partial class BattleManager : Node2D
     {
         //can't move if snared
         if(movingActor.statuses[(int)StatusType.Snared]>0) return 0;
-        //check if selected tile is adjacent. log is inneficient and should be stored in a dict or something but idc rn
+        //check if selected tile is adjacent. 
         if (!teleport)
         {
-            if((adjacencies[(int)MathF.Log2(movingActor.position)]&targetPosition)==0) return 0;
+            if((adjacencies[bitToID[movingActor.position]]&targetPosition)==0) return 0;
         }
         if(movingActor is Hero)
         {
@@ -416,7 +414,7 @@ public partial class BattleManager : Node2D
     private void CalculateEnemyMovement(Enemy enemy)
     {
         Random rand = new Random();
-        int validMoves = adjacencies[(int)MathF.Log2(enemy.position)];
+        int validMoves = adjacencies[bitToID[enemy.position]];
         int allSmartMoves = 0;
         List<Attack> enemyAttacks = enemy.attacks.ToList();
         foreach(Attack a in enemyAttacks)

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Godot;
@@ -11,11 +12,22 @@ public enum AttackType
     Starfall = 2,
     Zealotry = 3,
     Supplicate = 4,
-    Advancing = 5,
-    Retreating = 6,
     Pushing = 7,
     Pulling = 8
 
+}
+
+//General targeting types which require special checks but aren't unique to single attacks
+//Note some of these are restrictions while others describe attacks hitting multiple units in a specific pattern
+public enum TargetingType
+{
+    Basic = 0,
+    Column = 1,
+    Row = 2,
+    Neighbor = 4,
+    SameRow = 8,
+    Advancing = 16,
+    Retreating = 32
 }
 
 public class Attack
@@ -24,19 +36,19 @@ public class Attack
     public int usePosition, targetPosition;
     public StatusType[] status; public int[] statusDuration;
     public BattleScene bs;
-    public int damage; 
-    private int moraleDamage;
-    public bool isBuff;
-    public bool isAoe;
-    public bool isTileTargeted;
-    private AttackType attackType;
+    private BattleManager bm;
+    public int damage, moraleDamage, animaSpend;
+    public bool isBuff, isAoe, isTileTargeted;
+    private AttackType attackType = AttackType.None;
+    private TargetingType targetingType = TargetingType.Basic;
     public Actor owner;
-    public int animaSpend;
 
-    public Attack(string name, BattleScene bs, Actor owner, StatusType[] status = null, int[] statusDuration = null, int usePosition = 63, int targetPosition = 63, int damage = 1, int moraleDamage = 0, bool isBuff = false, bool isAoe = false, bool isTileTargeted = false, AttackType attackType = AttackType.None, int animaSpend = 0)
+    public Attack(string name, BattleScene bs, Actor owner, StatusType[] status = null, int[] statusDuration = null, int usePosition = 63, int targetPosition = 63, int damage = 1, int moraleDamage = 0, bool isBuff = false, bool isAoe = false, bool isTileTargeted = false, int animaSpend = 0)
     {
         this.name = name;
         this.bs = bs;
+        bm = bs.battleManager;
+        this.owner = owner;
         this.usePosition = usePosition;
         this.targetPosition = targetPosition;
         this.status = status;
@@ -45,42 +57,55 @@ public class Attack
         this.moraleDamage = moraleDamage;
         this.isBuff = isBuff;
         this.isAoe = isAoe;
-        this.attackType = attackType;
         this.isTileTargeted = isTileTargeted;
         this.animaSpend = animaSpend;
     }
     //constructor for single/no status attacks
-    public Attack(string name, BattleScene bs, Actor owner, StatusType status = 0, int statusDuration = 0, int usePosition = 63, int targetPosition = 63, int damage = 1, int moraleDamage = 0, bool isBuff = false, bool isAoe = false, bool isTileTargeted = false, AttackType attackType = AttackType.None, int animaSpend = 0):
-    this(name, bs, owner, [status], [statusDuration], usePosition, targetPosition, damage, moraleDamage, isBuff, isAoe, isTileTargeted, attackType, animaSpend){}
+    public Attack(string name, BattleScene bs, Actor owner, StatusType status = 0, int statusDuration = 0, int usePosition = 63, int targetPosition = 63, int damage = 1, int moraleDamage = 0, bool isBuff = false, bool isAoe = false, bool isTileTargeted = false, int animaSpend = 0):
+    this(name, bs, owner, [status], [statusDuration], usePosition, targetPosition, damage, moraleDamage, isBuff, isAoe, isTileTargeted, animaSpend){}
 
+    public void DeclareSpecialTypes(AttackType attackType = AttackType.None, TargetingType targetingType = TargetingType.Basic)
+    {
+        this.attackType = attackType;
+        this.targetingType = targetingType;
+    }
     //check here instead of in b-mngr to allow for uncluttered special cases (maybe should just give each attack its own class? idk)
     public bool CheckValidAttack(int usePosition, int targetPosition)
     {
         List<Actor> userAllies = bs.GetUnitsAsActors(owner.isFriendly);
         List<Actor> userEnemies = bs.GetUnitsAsActors(!owner.isFriendly);
+        //Special cases for unqiue attacks
         switch (attackType)
         {
             //supplicate should only work if targeting another thralled hero, for now no basic usePos/targetPos bit check as it should always be any
             case AttackType.Supplicate:
                 foreach(Hero h in bs.heroes) if(h.position == targetPosition && h.position != usePosition && h.anima > 0) return true;
                 break;
-            case AttackType.Advancing:
-                if(usePosition > 3 && owner.statuses[(int)StatusType.Snared] == 0)
-                {
-                    foreach(Actor a in userAllies) if(a.position == usePosition/4 && a.statuses[(int)StatusType.Snared] == 0) goto default;
-                }
-                break;
-            case AttackType.Retreating:
-                if(usePosition < 32 && owner.statuses[(int)StatusType.Snared] == 0)
-                {
-                    foreach(Actor a in userAllies) if(a.position == usePosition*4 && a.statuses[(int)StatusType.Snared] == 0) goto default;
-                }
-                break;
-            case AttackType.Starfall:
-            //default case for targetting a specific tile from a tile
-            default:
-                if((this.usePosition & usePosition) != 0 && (this.targetPosition & targetPosition) != 0) return true;
-                break;
+            //case AttackType.Starfall:
+        }
+        //Special cases for more generic targeting patterns
+        TargetingType tType = targetingType;
+        if (tType.HasFlag(TargetingType.Advancing) && usePosition > 3 && owner.statuses[(int)StatusType.Snared] == 0)
+        {
+            foreach(Actor a in userAllies) if(a.position == usePosition/4 && a.statuses[(int)StatusType.Snared] == 0) tType &= ~TargetingType.Advancing;
+        }
+        if (tType.HasFlag(TargetingType.Retreating) && usePosition < 32 && owner.statuses[(int)StatusType.Snared] == 0)
+        {
+            foreach(Actor a in userAllies) if(a.position == usePosition*4 && a.statuses[(int)StatusType.Snared] == 0) tType &= ~TargetingType.Retreating;
+        }
+        if (tType.HasFlag(TargetingType.Neighbor))
+        {
+            int dif = Mathf.Abs(usePosition - targetPosition);
+            if(dif == 1 || dif == 4 || dif == 16) tType &= ~ TargetingType.Neighbor;
+        }
+        if (tType.HasFlag(TargetingType.SameRow))
+        {
+            //I think this math works but need to check. Should be (0/2/4)%2 for row 1 and (1/3/5)%2 for row 2
+            if(bm.bitToID[usePosition]%2 == bm.bitToID[targetPosition]%2) tType &= ~TargetingType.SameRow;
+        }
+        if (tType == TargetingType.Basic)
+        {
+            if((this.usePosition & usePosition) != 0 && (this.targetPosition & targetPosition) != 0) return true;
         }
         return false;
     }
@@ -95,7 +120,11 @@ public class Attack
 
     public void Use(Actor target = null, Actor user = null, TileCollider tc = null)
     {
-        BattleManager bm = bs.battleManager;
+        //special instructions for unique targeting patterns (also includes self movement as that constrains targeting)
+        if (targetingType.HasFlag(TargetingType.Advancing)) bm.MoveActor(owner, owner.position/4, true);
+        if (targetingType.HasFlag(TargetingType.Retreating)) bm.MoveActor(owner, owner.position*4, true);
+
+        //special cases for unique attacks
         switch (attackType)
         {
             case AttackType.Zealotry:
@@ -113,12 +142,7 @@ public class Attack
                 (user as Hero).ChangeAnima(3);
                 (target as Hero).ChangeAnima(-2);
                 break;
-            case AttackType.Advancing:
-                bm.MoveActor(owner, owner.position/4, true);
-                goto default;
-            case AttackType.Retreating:
-                bm.MoveActor(owner, owner.position*4, true);
-                goto default;
+            
             case AttackType.Pushing:
                 if (target.position < 32) if(bm.GetValidMove(target, target.position*4, true)!=0) bm.MoveActor(target, target.position*4, true);
                 goto default;

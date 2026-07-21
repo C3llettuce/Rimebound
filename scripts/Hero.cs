@@ -115,7 +115,9 @@ public partial class Hero : Actor
             if(level >= 3)
             {
                 maxHealth = 14;
-                attacks.Add(new Attack("Slaying Shot", bs, this, StatusType.None, 0, 60, 63, 2, 0, false, false, false, AttackType.SlayerShot));
+                Attack a = new Attack("Slaying Shot", bs, this, StatusType.None, 0, 60, 63, 2, 0, false, false, false);
+                a.DeclareSpecialTypes(AttackType.SlayerShot);
+                attacks.Add(a);
             }
         }
         else if(heroInit < 30)
@@ -131,7 +133,9 @@ public partial class Hero : Actor
             if(level >= 3)
             {
                 maxHealth = 12;
-                attacks.Add(new Attack("Starfall", bs, this, StatusType.None, 0, 63, 63, 0, 0, false, false, true, AttackType.Starfall));
+                Attack a = new Attack("Starfall", bs, this, StatusType.None, 0, 63, 63, 0, 0, false, false, true);
+                a.DeclareSpecialTypes(AttackType.Starfall);
+                attacks.Add(a);
             }
         }
         //if more classes get added need an else if here instead, for now its default case though
@@ -148,7 +152,9 @@ public partial class Hero : Actor
             if(level >= 3)
             {
                 maxHealth = 16;
-                attacks.Add(new Attack("Zealotry", bs, this, StatusType.Empowered, 3, 63, 63, 0, 0, true, true, false, AttackType.Zealotry));
+                Attack a = new Attack("Zealotry", bs, this, StatusType.Empowered, 3, 63, 63, 0, 0, true, true, false);
+                a.DeclareSpecialTypes(AttackType.Zealotry);
+                attacks.Add(a);
             }
         }
 
@@ -180,7 +186,9 @@ public partial class Hero : Actor
         if(heroInit == 0)
         {
             maxHealth += 4;
-            attacks.Add(new Attack("Supplicate", bs, this, StatusType.None, 0, 63, 63, 0, -1, true, false, false, AttackType.Supplicate));
+            Attack a = new Attack("Supplicate", bs, this, StatusType.None, 0, 63, 63, 0, -1, true, false, false);
+            a.DeclareSpecialTypes(AttackType.Supplicate);
+            attacks.Add(a);
         }
         //Bandit tree
         else if(heroInit < 10)
@@ -190,7 +198,7 @@ public partial class Hero : Actor
         //Hunter tree
         else if(heroInit < 20)
         {
-            attacks.Add(new Attack("Evil Shot", bs, this, StatusType.None, 0, 60, 63, 5, 0, false, false, false, AttackType.None, 1));
+            attacks.Add(new Attack("Evil Shot", bs, this, StatusType.None, 0, 60, 63, 5, 0, false, false, false, 1));
         }
         //Oracle Tree
         else if(heroInit < 30)

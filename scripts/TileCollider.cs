@@ -4,7 +4,8 @@ using System;
 public enum TileState
 {
     None = 0,
-    Starfall = 1
+    Starfall = 1,
+    Trapped = 2
 
 }
 public partial class TileCollider : Node2D
