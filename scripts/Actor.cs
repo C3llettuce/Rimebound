@@ -21,11 +21,11 @@ public partial class Actor : Node2D
     public int movement;
     public List<Attack> attacks = new List<Attack>();
     public List<int> statuses = new List<int>();
+    public List<TileStatus> tileStatuses = new List<TileStatus>();
     public int Speed{get{return speed + speedBonus;}}
     public BattleScene bs;
     protected DisplayMeter hpBar;
-    protected PackedScene meterScene;
-    protected PackedScene iconScene;
+    protected PackedScene meterScene, iconScene;
     protected List<DisplayIcon> icons;
     protected Sprite2D highlightSprite;
 

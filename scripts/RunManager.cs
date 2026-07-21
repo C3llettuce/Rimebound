@@ -11,6 +11,7 @@ public partial class RunManager: Node2D
     public List<HeroData> heroDatas =  new List<HeroData>();
     Random rand;
     public Event currentEvent;
+    public BattleScene currentBattle;
     public int gold = 0;
     PackedScene heroScene = GD.Load<PackedScene>("res://scenes/battles/hero.tscn");
 

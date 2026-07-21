@@ -133,7 +133,7 @@ public partial class Hero : Actor
             if(level >= 3)
             {
                 maxHealth = 12;
-                Attack a = new Attack("Starfall", bs, this, StatusType.None, 0, 63, 63, 0, 0, false, false, true);
+                Attack a = new Attack("Starfall", bs, this, StatusType.None, 0, 63, 63, 10, 0, false, false, true);
                 a.DeclareSpecialTypes(AttackType.Starfall);
                 attacks.Add(a);
             }

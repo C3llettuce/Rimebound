@@ -1,20 +1,14 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
-public enum TileState
-{
-    None = 0,
-    Starfall = 1,
-    Trapped = 2
-
-}
 public partial class TileCollider : Node2D
 {
     [Export] public int tileID;
     public Sprite2D sprite;
     public Area2D area;
     public bool isHero = true;
-    public TileState tileState = 0;
+    public List<TileStatus> tileStatuses = new List<TileStatus>();
     public int stateDuration = 0;
     public override void _Ready()
     {

@@ -18,6 +18,7 @@ public partial class BattleManager : Node2D
 {
     BattleScene battleScene; public bool isRunning = true;
     List<Actor> roundOrder;
+    public List<List<TileStatus>> gridStatuses = new List<List<TileStatus>>();
     Actor activeActor;
     public Hero selectedHero; Enemy selectedEnemy; Attack selectedAttack; bool isMoving = false;
     TileCollider selectedTile;
@@ -33,6 +34,8 @@ public partial class BattleManager : Node2D
     {
         roundOrder = new List<Actor>();
         battleScene = GetParent() as BattleScene;
+        foreach (TileCollider tc in battleScene.heroGrid) gridStatuses.Add(tc.tileStatuses);
+        foreach (TileCollider tc in battleScene.enemyGrid) gridStatuses.Add(tc.tileStatuses);
         await RoundStart();
     }
 
@@ -87,7 +90,10 @@ public partial class BattleManager : Node2D
     }
     private async Task RunRound()
     {
-        
+        foreach(List<TileStatus> tsl in gridStatuses)
+        {
+            for(int i = tsl.Count -1; i>=0; i--) if(tsl[i] is TilePassive) (tsl[i] as TilePassive).Tick();
+        }
         for(int i = 0; i < roundOrder.Count; i++)
         {
             activeActor = roundOrder[i];

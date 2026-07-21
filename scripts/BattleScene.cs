@@ -32,6 +32,7 @@ public partial class BattleScene : Node2D
     public override async void _Ready()
     {
         base._Ready();
+        RunManager.Instance.currentBattle = this;
         //temp adjusting of set position vars for debugging and ui testing
         for(int i =0; i< heroPositions.Length; i++) heroPositions[i].Y += yPosOffset;
         for(int i =0; i< enemyPositions.Length; i++) enemyPositions[i].Y += yPosOffset;

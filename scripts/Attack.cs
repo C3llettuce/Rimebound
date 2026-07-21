@@ -12,8 +12,6 @@ public enum AttackType
     Starfall = 2,
     Zealotry = 3,
     Supplicate = 4,
-    Pushing = 7,
-    Pulling = 8
 
 }
 
@@ -27,7 +25,9 @@ public enum TargetingType
     Neighbor = 4,
     SameRow = 8,
     Advancing = 16,
-    Retreating = 32
+    Retreating = 32,
+    Pushing = 64,
+    Pulling = 128
 }
 
 public class Attack
@@ -120,9 +120,12 @@ public class Attack
 
     public void Use(Actor target = null, Actor user = null, TileCollider tc = null)
     {
-        //special instructions for unique targeting patterns (also includes self movement as that constrains targeting)
+        //special instructions for unique targeting patterns (also includes movement)
         if (targetingType.HasFlag(TargetingType.Advancing)) bm.MoveActor(owner, owner.position/4, true);
         if (targetingType.HasFlag(TargetingType.Retreating)) bm.MoveActor(owner, owner.position*4, true);
+        if (targetingType.HasFlag(TargetingType.Pushing)) if (target.position < 32) if(bm.GetValidMove(target, target.position*4, true)!=0) bm.MoveActor(target, target.position*4, true);
+        if (targetingType.HasFlag(TargetingType.Pulling)) if (target.position > 3) if(bm.GetValidMove(target, target.position/4, true)!=0) bm.MoveActor(target, target.position/4, true);
+
 
         //special cases for unique attacks
         switch (attackType)
@@ -131,8 +134,9 @@ public class Attack
                 foreach(Hero h in bs.heroes) if(h.anima > 0 && h != target) BasicUse(h, user);
                 goto default;
             case AttackType.Starfall:
-                tc.tileState = TileState.Starfall;
-                tc.stateDuration = 3;
+                TileStarfall ts = new TileStarfall(TileState.Starfall, owner, tc, 3, damage);
+                tc.tileStatuses.Add(ts);
+                owner.tileStatuses.Add(ts);
                 break;
             case AttackType.SlayerShot:
                 if (target.statuses[(int)StatusType.Marked] > 0) damage += 3;
@@ -142,13 +146,6 @@ public class Attack
                 (user as Hero).ChangeAnima(3);
                 (target as Hero).ChangeAnima(-2);
                 break;
-            
-            case AttackType.Pushing:
-                if (target.position < 32) if(bm.GetValidMove(target, target.position*4, true)!=0) bm.MoveActor(target, target.position*4, true);
-                goto default;
-            case AttackType.Pulling:
-                if (target.position > 3) if(bm.GetValidMove(target, target.position/4, true)!=0) bm.MoveActor(target, target.position/4, true);
-                goto default;
             //default case for all attacks that deal damage to a target
             default:
                 BasicUse(target, user);
@@ -156,6 +153,7 @@ public class Attack
         }
         
     }
+
     private void BasicUse(Actor target, Actor user)
     {
         Debug.WriteLine(user.name + " using Attack " + name + " on " + target.name);
@@ -200,7 +198,6 @@ public class Attack
                 s += "\n+2 Damage if target is snared\n+2 Damage if target is marked";
                 break;
         }
-
         return s;
     }
 }
