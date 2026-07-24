@@ -1,14 +1,14 @@
 [gd_scene load_steps=3 format=3 uid="uid://cc4bn5viwvush"]
 
 [ext_resource type="Script" uid="uid://c1na2joyp5hba" path="res://scripts/DisplayIcon.cs" id="1_1ybca"]
-[ext_resource type="Texture2D" uid="uid://cw3qvaj5d26b" path="res://assets/sprites/devIcons.png" id="1_nuwdv"]
+[ext_resource type="Texture2D" uid="uid://8orvirwmasvj" path="res://assets/sprites/devIcons.png" id="2_1ybca"]
 
 [node name="DisplayIcon" type="Node2D"]
 script = ExtResource("1_1ybca")
 
 [node name="Icon" type="Sprite2D" parent="."]
 scale = Vector2(2, 2)
-texture = ExtResource("1_nuwdv")
+texture = ExtResource("2_1ybca")
 region_enabled = true
 region_rect = Rect2(0, 0, 25, 25)
 

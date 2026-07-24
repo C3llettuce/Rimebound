@@ -25,7 +25,7 @@ public partial class Hero : Actor
         Node2D mentalBarNode = (Node2D)meterScene.Instantiate();
         AddChild(mentalBarNode);
         mentalBar = mentalBarNode as DisplayMeter;
-        mentalBar.GlobalPosition = new Vector2(hpBar.GlobalPosition.X, mentalBar.GlobalPosition.Y + 70);   
+        mentalBar.GlobalPosition = new Vector2(hpBar.GlobalPosition.X, mentalBar.GlobalPosition.Y + 40);   
     }
 
 

@@ -14,6 +14,7 @@ public abstract class TileStatus
     public TileState status;
     public Actor owner;
     public TileCollider attachedTile;
+    public DisplayIcon myIcon;
 
     public TileStatus(TileState status, Actor owner, TileCollider attachedTile)
     {
@@ -21,9 +22,17 @@ public abstract class TileStatus
         this.owner = owner;
         this.attachedTile = attachedTile;
     }
+    public void SetIcon(DisplayIcon myIcon)
+    {
+        this.myIcon = myIcon;
+    }
     public void RemoveStatus()
     {
         attachedTile.tileStatuses.Remove(this);
+    }
+    public virtual void Tick()
+    {
+        attachedTile.ArrangeIcons();
     }
 }
 
@@ -46,7 +55,17 @@ public abstract class TilePassive : TileStatus
     {
         this.duration = duration;
     }
-    public abstract void Tick();
+    public override void Tick()
+    {
+        myIcon.UpdateLabel(-1);
+        if(duration == 0)
+        {
+            attachedTile.tileStatuses.Remove(this);
+            attachedTile.icons.Remove(myIcon);
+            myIcon.QueueFree();
+        }
+        base.Tick();
+    }
 }
 
 
@@ -74,8 +93,7 @@ public class TileStarfall: TilePassive
                     break;
                 }
             }
-            attachedTile.tileStatuses.Remove(this);
         }
-
+        base.Tick();
     }
 }

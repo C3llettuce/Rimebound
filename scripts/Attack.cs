@@ -135,7 +135,7 @@ public class Attack
                 goto default;
             case AttackType.Starfall:
                 TileStarfall ts = new TileStarfall(TileState.Starfall, owner, tc, 3, damage);
-                tc.tileStatuses.Add(ts);
+                tc.AddTileStatus(ts);
                 owner.tileStatuses.Add(ts);
                 break;
             case AttackType.SlayerShot:

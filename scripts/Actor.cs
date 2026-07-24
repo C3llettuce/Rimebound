@@ -37,7 +37,7 @@ public partial class Actor : Node2D
         Node2D hpBarNode = (Node2D)meterScene.Instantiate();
         AddChild(hpBarNode);
         hpBar = hpBarNode as DisplayMeter;
-        hpBar.GlobalPosition = new Vector2(hpBar.GlobalPosition.X, hpBar.GlobalPosition.Y + 45);
+        hpBar.GlobalPosition = new Vector2(hpBar.GlobalPosition.X, hpBar.GlobalPosition.Y + 15);
         highlightSprite = GetNode<Sprite2D>("highlight");
         icons = new List<DisplayIcon>();
         for(int i =0; i<=(int)StatusType.Starstruck; i++)
