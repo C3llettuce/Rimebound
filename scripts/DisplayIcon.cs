@@ -32,7 +32,7 @@ public partial class DisplayIcon : Node2D
         icon.RegionRect = new Rect2(new Vector2(spriteSize*(i%width), spriteSize*(i/height)), new Vector2(spriteSize, spriteSize));
         durationLabel.Text = duration.ToString();
     }
-    public void Init(TileState tileType, int duration = 100)
+    public void Init(TileState tileType, int duration = 100 )
     {
         this.duration = duration;
         int i = (int)tileType -1 + statusIconNum;

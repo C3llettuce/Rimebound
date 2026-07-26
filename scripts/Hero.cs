@@ -90,7 +90,9 @@ public partial class Hero : Actor
             if(level >= 2)
             {
                 maxHealth = 13;
-                attacks.Add(new Attack("Guard", bs, this, StatusType.Defended, 2, 63, 63, 0, 0, true));
+                Attack a = new Attack("Guard", bs, this, StatusType.Defended, 2, 63, 63, 0, 0, true);
+                a.DeclareSpecialTypes(AttackType.None, TargetingType.Neighbor);
+                attacks.Add(a);
             }
             if(level >= 3)
             {

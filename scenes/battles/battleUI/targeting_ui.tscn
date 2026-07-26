@@ -1,12 +1,14 @@
-[gd_scene load_steps=4 format=3 uid="uid://bneh0vr1ui7da"]
+[gd_scene load_steps=5 format=3 uid="uid://bneh0vr1ui7da"]
 
 [ext_resource type="Script" uid="uid://d2wnsbquw8pu0" path="res://scripts/TargetingUI.cs" id="1_g5kul"]
 [ext_resource type="Texture2D" uid="uid://b1kp6qb0wct6y" path="res://assets/sprites/icon.svg" id="2_uk7qh"]
 [ext_resource type="Texture2D" uid="uid://br0rgbve8x8ji" path="res://assets/sprites/red.png" id="3_vqwhy"]
+[ext_resource type="Texture2D" uid="uid://df1jjlj5asid8" path="res://assets/sprites/green.png" id="4_vqwhy"]
 
-[node name="TargetingUI" type="Node2D" node_paths=PackedStringArray("heroTiles", "enemyTiles")]
+[node name="TargetingUI" type="Node2D" node_paths=PackedStringArray("heroTiles", "buffTiles", "enemyTiles")]
 script = ExtResource("1_g5kul")
 heroTiles = [NodePath("StaticTile1/H1"), NodePath("StaticTile2/H2"), NodePath("StaticTile3/H3"), NodePath("StaticTile4/H4"), NodePath("StaticTile5/H5"), NodePath("StaticTile6/H6")]
+buffTiles = [NodePath("StaticTile7/B1"), NodePath("StaticTile8/B2"), NodePath("StaticTile9/B3"), NodePath("StaticTile10/B4"), NodePath("StaticTile11/B5"), NodePath("StaticTile12/B6")]
 enemyTiles = [NodePath("StaticTile11/E1"), NodePath("StaticTile12/E2"), NodePath("StaticTile9/E3"), NodePath("StaticTile10/E4"), NodePath("StaticTile7/E5"), NodePath("StaticTile8/E6")]
 
 [node name="StaticTile1" type="Sprite2D" parent="."]
@@ -71,6 +73,11 @@ visible = false
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("3_vqwhy")
 
+[node name="B1" type="Sprite2D" parent="StaticTile7"]
+visible = false
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("4_vqwhy")
+
 [node name="StaticTile8" type="Sprite2D" parent="."]
 position = Vector2(549, 150)
 texture = ExtResource("2_uk7qh")
@@ -79,6 +86,11 @@ texture = ExtResource("2_uk7qh")
 visible = false
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("3_vqwhy")
+
+[node name="B2" type="Sprite2D" parent="StaticTile8"]
+visible = false
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("4_vqwhy")
 
 [node name="StaticTile9" type="Sprite2D" parent="."]
 position = Vector2(399, 0)
@@ -89,6 +101,11 @@ visible = false
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("3_vqwhy")
 
+[node name="B3" type="Sprite2D" parent="StaticTile9"]
+visible = false
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("4_vqwhy")
+
 [node name="StaticTile10" type="Sprite2D" parent="."]
 position = Vector2(399, 150)
 texture = ExtResource("2_uk7qh")
@@ -97,6 +114,11 @@ texture = ExtResource("2_uk7qh")
 visible = false
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("3_vqwhy")
+
+[node name="B4" type="Sprite2D" parent="StaticTile10"]
+visible = false
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("4_vqwhy")
 
 [node name="StaticTile11" type="Sprite2D" parent="."]
 position = Vector2(249, 0)
@@ -107,6 +129,11 @@ visible = false
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("3_vqwhy")
 
+[node name="B5" type="Sprite2D" parent="StaticTile11"]
+visible = false
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("4_vqwhy")
+
 [node name="StaticTile12" type="Sprite2D" parent="."]
 position = Vector2(249, 150)
 texture = ExtResource("2_uk7qh")
@@ -115,3 +142,8 @@ texture = ExtResource("2_uk7qh")
 visible = false
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("3_vqwhy")
+
+[node name="B6" type="Sprite2D" parent="StaticTile12"]
+visible = false
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("4_vqwhy")

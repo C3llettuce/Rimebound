@@ -39,8 +39,8 @@ public class Attack
     private BattleManager bm;
     public int damage, moraleDamage, animaSpend;
     public bool isBuff, isAoe, isTileTargeted;
-    private AttackType attackType = AttackType.None;
-    private TargetingType targetingType = TargetingType.Basic;
+    public AttackType attackType = AttackType.None;
+    public TargetingType targetingType = TargetingType.Basic;
     public Actor owner;
 
     public Attack(string name, BattleScene bs, Actor owner, StatusType[] status = null, int[] statusDuration = null, int usePosition = 63, int targetPosition = 63, int damage = 1, int moraleDamage = 0, bool isBuff = false, bool isAoe = false, bool isTileTargeted = false, int animaSpend = 0)
