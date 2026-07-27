@@ -18,7 +18,7 @@ public partial class Hero : Actor
     private Texture2D defaultTexture;
     private Texture2D thrallTexture;
     public HeroData hData;
-
+    
     public override void _Ready()
     {
         base._Ready();
@@ -81,7 +81,7 @@ public partial class Hero : Actor
             maxHealth = 5;
             attacks.Add(new Attack("Throw Rock", bs, this, StatusType.None));
         }
-        //bandit, merc, duelist
+        //Bandit, Merc, Duelist
         else if(heroInit < 10)
         {
             speed = 5;
@@ -98,7 +98,10 @@ public partial class Hero : Actor
             {
                 speed = 7;
                 maxHealth = 17;
-                attacks.Add(new Attack("Counter", bs, this, StatusType.None));
+                riposteSkill = 3;
+                Attack a = new Attack("Counter", bs, this, StatusType.Thorns, 3);
+                a.DeclareSpecialTypes(AttackType.None, TargetingType.SelfOnly);
+                attacks.Add(a);
             }
         }
         //Hunter, Ranger, Slayer
@@ -122,9 +125,10 @@ public partial class Hero : Actor
                 attacks.Add(a);
             }
         }
+        //Doomsayer, Oracle, Astronomer
         else if(heroInit < 30)
         {
-            speed = 6;
+            speed = 5;
             maxHealth = 7;
             attacks.Add(new Attack("Portend", bs, this, StatusType.Marked, 3, 63, 63, 1));
             if(level >= 2)
@@ -135,11 +139,12 @@ public partial class Hero : Actor
             if(level >= 3)
             {
                 maxHealth = 12;
-                Attack a = new Attack("Starfall", bs, this, StatusType.None, 0, 63, 63, 10, 0, false, false, true);
+                Attack a = new Attack("Starfall", bs, this, StatusType.None, 0, 63, 63, 3, 0, false, false, true);
                 a.DeclareSpecialTypes(AttackType.Starfall);
                 attacks.Add(a);
             }
         }
+        //Pilgrim, Monk, Priest
         //if more classes get added need an else if here instead, for now its default case though
         else
         {
@@ -167,22 +172,40 @@ public partial class Hero : Actor
             sprite.sprite2D.Scale *= .3f;
             sprite.sprite2D.Position = new Vector2(sprite.sprite2D.Position.X+15, sprite.sprite2D.Position.Y - 30);
         }
-        
-        //set health
-        if(startingHealth == -1) health = maxHealth;
-        else health = startingHealth;
-        //set morale
+
+        //first set morale
         if(startingMorale == -1) morale = maxMorale;
         else morale = startingMorale;
+        //then init thrall or set morale bar
+        if(startingAnima > 0) ThrallInit(startingAnima);
+        if(isLeader) LeaderInit();
+        else mentalBar.Init(MeterType.Morale, maxMorale, morale);
+        //then set health, as it can be impacted by thralling
+        if(startingHealth == -1) health = maxHealth;
+        else health = startingHealth;
+       
+        
 
         hpBar.Init(MeterType.Health, maxHealth, health);
-        if(startingAnima > 0) ThrallInit(startingAnima);
-        else mentalBar.Init(MeterType.Morale, maxMorale, morale);
+        
+        
+    }
+
+    public void LeaderInit()
+    {
+        Attack enthrall = new Attack("Enthrall", bs, this, StatusType.None, 0, 63, 63, 0, 0, true);
+        enthrall.DeclareSpecialTypes(AttackType.Enthrall, TargetingType.NotSelf);
+        attacks.Add(enthrall);
+        if(anima<=0) Enthrall();
     }
 
     public void ThrallInit(int startingAnima)
     {
+        //visual stuff
+        if(thrallTexture != null) sprite.sprite2D.Texture = thrallTexture;
         mentalBar.Init(MeterType.Anima, startingAnima, true);
+
+        //add special moves
         int heroInit = (int)heroType;
         int level = heroInit%10;
         if(heroInit == 0)
@@ -195,14 +218,14 @@ public partial class Hero : Actor
         //Bandit tree
         else if(heroInit < 10)
         {
-            
+            attacks.Add(new Attack("Anima Blade", bs, this, StatusType.None, 0, 63, 3, 7, 0, false, false, false, 1));
         }
         //Hunter tree
         else if(heroInit < 20)
         {
-            attacks.Add(new Attack("Evil Shot", bs, this, StatusType.None, 0, 60, 63, 5, 0, false, false, false, 1));
+            attacks.Add(new Attack("Anima Arrow", bs, this, StatusType.None, 0, 60, 63, 5, 0, false, false, false, 1));
         }
-        //Oracle Tree
+        //Doomsayer Tree
         else if(heroInit < 30)
         {
             
@@ -212,6 +235,22 @@ public partial class Hero : Actor
         {
             
         }
+    }
+
+    public void PassLeader()
+    {
+        LeaderInit();
+    }
+
+    //method for enthralling a unit mid combat
+    public void Enthrall()
+    {
+        //implement resist/flee chances here later
+        int newAnima = (int)MathF.Max(health, maxHealth/2);
+        anima = newAnima;
+        ThrallInit(newAnima);
+        health = maxHealth;
+        //implement effect on allied morale here later
     }
 
     public override bool TurnEnd()
@@ -230,35 +269,7 @@ public partial class Hero : Actor
         }
         return false;
     }
-    //method for instantiating a thrall units special properties on spawn
     
-
-    //method for enthralling a unit mid combat
-    public void Enthrall()
-    {
-        if(thrallTexture != null) sprite.sprite2D.Texture = thrallTexture;
-        int heroInit = (int)heroType;
-        if(heroInit == 0)
-        {
-            
-        }
-        else if(heroInit < 10)
-        {
-            
-        }
-        else if(heroInit < 20)
-        {
-            
-        }
-        else if(heroInit < 30)
-        {
-            
-        }
-        else
-        {
-            
-        }
-    }
     protected override void Die()
     {
         mentalBar.QueueFree();

@@ -7,10 +7,13 @@ using System.Threading.Tasks;
 
 public enum SelectMode
 {
-    Any = 7,
+    Any = 15,
     Hero = 1,
     Enemy = 2,
-    Empty = 4
+    Tile = 4,
+    Empty = 8,
+
+    NewLeader = 16
 }
 
 //Handles round to round combat as well as attack resolution and enemy AI
@@ -19,13 +22,16 @@ public partial class BattleManager : Node2D
     BattleScene battleScene; public bool isRunning = true;
     List<Actor> roundOrder;
     public List<List<TileStatus>> gridStatuses = new List<List<TileStatus>>();
-    Actor activeActor;
+    private Actor activeActor;
     public Hero selectedHero; Enemy selectedEnemy; Attack selectedAttack; bool isMoving = false;
-    TileCollider selectedTile;
-    public SelectMode selectMode = SelectMode.Any;
-    public event EventHandler HeroUseAttack;
+    private TileCollider selectedTile;
+    public Attack emergencyLeaderSwap;
+    public SelectMode selectMode = SelectMode.Any; public bool freeSelect = true;
     private TaskCompletionSource<bool> HeroTurn = new TaskCompletionSource<bool>();
-    private int[] adjacencies = {6, 9, 25, 38,36, 24};
+    public TaskCompletionSource<bool> LeaderSwap = new TaskCompletionSource<bool>();
+
+    //bit adjacencies for tiles in index order
+    private int[] adjacencies = {6, 9, 25, 38, 36, 24};
     //I think these dicts are faster computationally than trying using log each time
     public Dictionary<int, int> bitToID = new Dictionary<int, int>{[1] = 0, [2] = 1, [4] = 2, [8] = 3, [16] = 4, [32] = 5};
 
@@ -34,6 +40,9 @@ public partial class BattleManager : Node2D
     {
         roundOrder = new List<Actor>();
         battleScene = GetParent() as BattleScene;
+        emergencyLeaderSwap = new Attack("Pass the Curse", battleScene, null, StatusType.None, 0, 63, 63, 0, 0, true);
+        emergencyLeaderSwap.DeclareSpecialTypes(AttackType.Crown);
+        LeaderSwap.TrySetResult(true);
         foreach (TileCollider tc in battleScene.heroGrid) gridStatuses.Add(tc.tileStatuses);
         foreach (TileCollider tc in battleScene.enemyGrid) gridStatuses.Add(tc.tileStatuses);
         await RoundStart();
@@ -96,6 +105,7 @@ public partial class BattleManager : Node2D
         }
         for(int i = 0; i < roundOrder.Count; i++)
         {
+            await LeaderSwap.Task;
             activeActor = roundOrder[i];
             //call start turn for next actor in initiative
             if(activeActor != null){activeActor.TurnStart();}
@@ -115,14 +125,10 @@ public partial class BattleManager : Node2D
     private void EndActorTurn()
     {
         bool dead = activeActor.TurnEnd();
-        if(activeActor is Hero && dead == true)
-        {
-            KillActor(activeActor);
-        }
     }
 
 
-    public void KillActor(Actor actor)
+    public async Task KillActor(Actor actor)
     {
         for(int i = 0; i < roundOrder.Count; i++)
         {
@@ -136,9 +142,24 @@ public partial class BattleManager : Node2D
         //apply morale change if hero died/panicked
         if(actor is Hero)
         {
+            Hero deadHero = actor as Hero;
             int stress = 2;
+            if (deadHero.isLeader)
+            {
+                GD.Print("Attempting Leader Swap");
+                stress += 2;
+                selectMode = SelectMode.NewLeader;
+                battleScene.freeSelect = false;
+                SelectAttack(emergencyLeaderSwap);
+                battleScene.ClearUI();
+                battleScene.UpdateAttackDescription(emergencyLeaderSwap);
+                selectedHero = null;
+                LeaderSwap = new TaskCompletionSource<bool>();
+                // await LeaderSwap.Task;
+            }
+            
             //less stress for fleeing than death
-            if(actor.health>0) stress = 1;
+            if(deadHero.health>0 && deadHero.anima != 0) stress = 1;
             foreach(Hero h in battleScene.heroes) h.ChangeMorale(stress);
         }
         
@@ -331,7 +352,6 @@ public partial class BattleManager : Node2D
         if (GetValidMove(movingActor, targetPosition, teleport) != 0) return true;
         return false;
     }
-
 
     private bool CheckValidAttack(Attack atk, int usePosition, int targetPosition)
     {

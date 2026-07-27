@@ -4,9 +4,24 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
+//this enum is really just so I don't have to remember the int values of all statuses
 public enum StatusType
 {
-    None = 0, Marked = 1, Snared = 2, Empowered = 3, Defended = 4, Weak = 5, Bleeding = 6, Brave = 7, Tough = 8, Starstruck = 9
+    None = 0, Marked = 1, Snared = 2, Empowered = 3, Defended = 4, Weak = 5, Bleeding = 6, Brave = 7, Tough = 8, Thorns = 9, Starstruck = 10
+}
+
+public class Status
+{
+    public Status(int duration = 0, int special = 0)
+    {
+        Duration = duration;
+        Special = special;
+        Owner = new List<Actor>();
+    }
+    public int Duration {get; set;}
+    public int Special {get; set;}
+    public List<Actor> Owner {get; set;}
+    public static implicit operator int(Status s) => s.Duration;
 }
 
 public partial class Actor : Node2D
@@ -20,7 +35,7 @@ public partial class Actor : Node2D
     protected int speed; public int speedBonus;
     public int movement;
     public List<Attack> attacks = new List<Attack>();
-    public List<int> statuses = new List<int>();
+    public List<Status> statuses = new List<Status>();
     public List<TileStatus> tileStatuses = new List<TileStatus>();
     public int Speed{get{return speed + speedBonus;}}
     public BattleScene bs;
@@ -28,6 +43,7 @@ public partial class Actor : Node2D
     protected PackedScene meterScene, iconScene;
     protected List<DisplayIcon> icons;
     protected Sprite2D highlightSprite;
+    public int riposteSkill = 0;
 
     public override void _Ready()
     {
@@ -42,7 +58,7 @@ public partial class Actor : Node2D
         icons = new List<DisplayIcon>();
         for(int i =0; i<=(int)StatusType.Starstruck; i++)
         {
-            statuses.Add(0);
+            statuses.Add(new Status());
         }
     }
 
@@ -61,7 +77,7 @@ public partial class Actor : Node2D
             {
                 DisplayIcon toRemove = FetchStatusIcon((StatusType)i);
                 toRemove.UpdateLabel(-1);
-                statuses[i] -= 1;
+                statuses[i].Duration -= 1;
                 //remove ui icon
                 if(statuses[i] == 0)
                 {
@@ -104,7 +120,7 @@ public partial class Actor : Node2D
         }
     }
 
-    public bool AddStatus((StatusType, int)[] newStatuses)
+    public bool AddStatus((StatusType, int)[] newStatuses, Actor applicator = null)
     {
         for(int i = 0; i < newStatuses.Length; i++)
         {
@@ -114,13 +130,19 @@ public partial class Actor : Node2D
             if(statuses[(int)currentStatus] > 0) FetchStatusIcon(currentStatus).UpdateLabel(currentDuration);
             else AddStatusIcon(currentStatus, currentDuration);
             
-            statuses[(int)currentStatus] += currentDuration;
+            statuses[(int)currentStatus].Duration += currentDuration;
         }
         ArrangeIcons();
         //bool return is for if/when immunities/resist chances are implemented
         return true;
     }
 
+    public void RecieveAttack(Actor attacker, Attack atk, int damage = 0)
+    {
+        if(atk.isBuff) return;
+        if(statuses[(int)StatusType.Thorns] > 0) attacker.ChangeHealth(riposteSkill);
+    }
+    
     public void ChangeHealth(int damage)
     {
         int oldHealth = health;

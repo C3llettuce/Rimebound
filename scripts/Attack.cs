@@ -12,6 +12,8 @@ public enum AttackType
     Starfall = 2,
     Zealotry = 3,
     Supplicate = 4,
+    Enthrall = 5,
+    Crown = 6
 
 }
 
@@ -27,7 +29,9 @@ public enum TargetingType
     Advancing = 16,
     Retreating = 32,
     Pushing = 64,
-    Pulling = 128
+    Pulling = 128,
+    NotSelf = 256,
+    SelfOnly = 512
 }
 
 public class Attack
@@ -80,29 +84,37 @@ public class Attack
             //supplicate should only work if targeting another thralled hero, for now no basic usePos/targetPos bit check as it should always be any
             case AttackType.Supplicate:
                 foreach(Hero h in bs.heroes) if(h.position == targetPosition && h.position != usePosition && h.anima > 0) return true;
-                break;
-            //case AttackType.Starfall:
+                return false;
+            case AttackType.Enthrall:
+                foreach(Hero h in bs.heroes) if(h.position == targetPosition && h.position != usePosition && h.anima <= 0) return true;
+                return false;
         }
         //Special cases for more generic targeting patterns
         TargetingType tType = targetingType;
-        if (tType.HasFlag(TargetingType.Advancing) && usePosition > 3 && owner.statuses[(int)StatusType.Snared] == 0)
+        if(tType != TargetingType.Basic)
         {
-            foreach(Actor a in userAllies) if(a.position == usePosition/4 && a.statuses[(int)StatusType.Snared] == 0) tType &= ~TargetingType.Advancing;
+            if(tType.HasFlag(TargetingType.SelfOnly)) if (usePosition == targetPosition) tType &= ~TargetingType.SelfOnly;
+            if(tType.HasFlag(TargetingType.NotSelf)) if (usePosition != targetPosition) tType &= ~TargetingType.NotSelf;
+            if (tType.HasFlag(TargetingType.Advancing) && usePosition > 3 && owner.statuses[(int)StatusType.Snared] == 0)
+            {
+                foreach(Actor a in userAllies) if(a.position == usePosition/4 && a.statuses[(int)StatusType.Snared] == 0) tType &= ~TargetingType.Advancing;
+            }
+            if (tType.HasFlag(TargetingType.Retreating) && usePosition < 32 && owner.statuses[(int)StatusType.Snared] == 0)
+            {
+                foreach(Actor a in userAllies) if(a.position == usePosition*4 && a.statuses[(int)StatusType.Snared] == 0) tType &= ~TargetingType.Retreating;
+            }
+            if (tType.HasFlag(TargetingType.Neighbor))
+            {
+                int dif = Mathf.Abs(usePosition - targetPosition);
+                if(dif == 1 || dif == 4 || dif == 16) tType &= ~ TargetingType.Neighbor;
+            }
+            if (tType.HasFlag(TargetingType.SameRow))
+            {
+                //I think this math works but need to check. Should be (0/2/4)%2 for row 1 and (1/3/5)%2 for row 2
+                if(bm.bitToID[usePosition]%2 == bm.bitToID[targetPosition]%2) tType &= ~TargetingType.SameRow;
+            }
         }
-        if (tType.HasFlag(TargetingType.Retreating) && usePosition < 32 && owner.statuses[(int)StatusType.Snared] == 0)
-        {
-            foreach(Actor a in userAllies) if(a.position == usePosition*4 && a.statuses[(int)StatusType.Snared] == 0) tType &= ~TargetingType.Retreating;
-        }
-        if (tType.HasFlag(TargetingType.Neighbor))
-        {
-            int dif = Mathf.Abs(usePosition - targetPosition);
-            if(dif == 1 || dif == 4 || dif == 16) tType &= ~ TargetingType.Neighbor;
-        }
-        if (tType.HasFlag(TargetingType.SameRow))
-        {
-            //I think this math works but need to check. Should be (0/2/4)%2 for row 1 and (1/3/5)%2 for row 2
-            if(bm.bitToID[usePosition]%2 == bm.bitToID[targetPosition]%2) tType &= ~TargetingType.SameRow;
-        }
+       
         if (tType == TargetingType.Basic)
         {
             if((this.usePosition & usePosition) != 0 && (this.targetPosition & targetPosition) != 0) return true;
@@ -126,10 +138,18 @@ public class Attack
         if (targetingType.HasFlag(TargetingType.Pushing)) if (target.position < 32) if(bm.GetValidMove(target, target.position*4, true)!=0) bm.MoveActor(target, target.position*4, true);
         if (targetingType.HasFlag(TargetingType.Pulling)) if (target.position > 3) if(bm.GetValidMove(target, target.position/4, true)!=0) bm.MoveActor(target, target.position/4, true);
 
-
+        Hero targetHero;
         //special cases for unique attacks
         switch (attackType)
         {
+            case AttackType.Enthrall:
+                targetHero = target as Hero;
+                targetHero.Enthrall();
+                break;
+            case AttackType.Crown:
+                targetHero = target as Hero;
+                targetHero.PassLeader();
+                break;
             case AttackType.Zealotry:
                 foreach(Hero h in bs.heroes) if(h.anima > 0 && h != target) BasicUse(h, user);
                 goto default;
@@ -176,7 +196,7 @@ public class Attack
             if(user.statuses[(int)StatusType.Weak]>0) attackDamage*=.67f;
             if(target.statuses[(int)StatusType.Defended]>0) attackDamage*=.67f;
         }
-               
+        target.RecieveAttack(user, this, (int)attackDamage);
         target.ChangeHealth((int)attackDamage);
 
         //no valid checks as currently no non-thralls/enemies should have attacks with animaSpend
@@ -185,6 +205,7 @@ public class Attack
 
     public string GetDescription()
     {
+        if(attackType == AttackType.Crown) return "Your bearer has fallen.\nPass the Frozen Shackle to another soul";
         string s = "";
         if(animaSpend > 0) s += "Cost: " + animaSpend + " anima";
         if(damage > 0) s += "\n" + "Damage: " + damage;

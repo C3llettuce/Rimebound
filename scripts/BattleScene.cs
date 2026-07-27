@@ -15,6 +15,7 @@ public partial class BattleScene : Node2D
     [Export] public AttackUI[] atkUIS;
     [Export] private RichTextLabel attackDescription;
     public ActionUI passUI;
+    public bool freeSelect = true;
     public List<Hero> heroes; public List<Enemy> enemies;
     public List<TileCollider> heroGrid, enemyGrid;
     public int resolutionScale = 1;
@@ -57,12 +58,12 @@ public partial class BattleScene : Node2D
         //add movement event
         moveUI.ui.GetArea().InputEvent += (a, e, c) => 
         {
-            if (ClickEventCheck(e)) battleManager.SelectMovement();
+            if (ClickEventCheck(e) && freeSelect) battleManager.SelectMovement();
         };
 
         //add attack events
         foreach(AttackUI aui in atkUIS) aui.ui.GetArea().InputEvent += (a, e, c) => {
-            if (ClickEventCheck(e))
+            if (ClickEventCheck(e) && freeSelect)
             {
                 battleManager.SelectAttack(aui.atk);
                 targetingUI.PreviewAttack(aui.atk);
@@ -73,10 +74,10 @@ public partial class BattleScene : Node2D
 
         //add tile selection events
         foreach(TileCollider tc in heroGrid) tc.GetArea().InputEvent += (a, e, c) => {
-            if(ClickEventCheck(e)) {battleManager.SelectTile(tc);}//todo
+            if(ClickEventCheck(e) && freeSelect) {battleManager.SelectTile(tc);}//todo
         };
         foreach(TileCollider tc in enemyGrid) tc.GetArea().InputEvent += (a, e, c) => {
-            if(ClickEventCheck(e)) {battleManager.SelectTile(tc);}//todo
+            if(ClickEventCheck(e) && freeSelect) {battleManager.SelectTile(tc);}//todo
         };
 
         //start actual battle
@@ -110,20 +111,34 @@ public partial class BattleScene : Node2D
                 if (ClickEventCheck(e))
                 {
                     //update buttons
-                    foreach(AttackUI aui in atkUIS) aui.Visible = true;
-                    for(int i = 0; i < atkUIS.Length; i++)
+                    if(battleManager.selectMode != SelectMode.NewLeader)
                     {
-                        if(i<h.attacks.Count) atkUIS[i].UpdateText(h.attacks[i]);
-                        else atkUIS[i].Visible = false;
-                    }
-                    moveUI.UpdateText(h);
-                    //reset ui elements
-                    if(battleManager.selectedHero != h)
+                        //reset ui elements
+                        if(battleManager.selectedHero != h)
+                        {
+                            ClearUI();
+                            for(int i = 0; i < atkUIS.Length; i++)
+                            {
+                                if(i<h.attacks.Count) 
+                                {
+                                    atkUIS[i].Visible = true;
+                                    atkUIS[i].UpdateText(h.attacks[i]);
+                                }
+                            }
+                            moveUI.Visible = true;
+                            moveUI.UpdateText(h);
+                        }
+                        battleManager.SelectCharacter(h);
+                        }
+                    
+                    else
                     {
-                       attackDescription.Text = "";
-                       targetingUI.PreviewAttack(null) ;
+                        battleManager.emergencyLeaderSwap.Use(h);
+                        freeSelect = true;
+                        battleManager.selectMode = SelectMode.Any;
+                        attackDescription.Text = "";
+                        battleManager.LeaderSwap.TrySetResult(true);
                     }
-                    battleManager.SelectCharacter(h);
                 }
             };
         }
@@ -160,7 +175,7 @@ public partial class BattleScene : Node2D
         {
             enemy.GetNode<EnemySprite>("EnemySprite").GetNode<Area2D>("Area2D").InputEvent += (a, e, c) => 
             {
-                if (ClickEventCheck(e))
+                if (ClickEventCheck(e) && freeSelect)
                 {
                     //enemy selection code here
                     battleManager.SelectCharacter(enemy);
@@ -191,6 +206,14 @@ public partial class BattleScene : Node2D
     {
         if(getHeroes) return heroes.Cast<Actor>().ToList();
         else  return enemies.Cast<Actor>().ToList();
+    }
+
+    public void ClearUI()
+    {
+        foreach(AttackUI aui in atkUIS) aui.Visible = false;
+        attackDescription.Text = "";
+        targetingUI.PreviewAttack(null);
+        moveUI.Visible = false;
     }
 
     //
@@ -227,7 +250,7 @@ public partial class BattleScene : Node2D
         if(heroes.Count == 0) CombatLoss();
     }
 
-    private void UpdateAttackDescription(Attack atk)
+    public void UpdateAttackDescription(Attack atk)
     {
         attackDescription.Text = atk.GetDescription();
     }
