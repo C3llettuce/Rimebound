@@ -177,7 +177,7 @@ public partial class Hero : Actor
         if(startingMorale == -1) morale = maxMorale;
         else morale = startingMorale;
         //then init thrall or set morale bar
-        if(startingAnima > 0) ThrallInit(startingAnima);
+        if(startingAnima >= 0) ThrallInit(startingAnima);
         if(isLeader) LeaderInit();
         else mentalBar.Init(MeterType.Morale, maxMorale, morale);
         //then set health, as it can be impacted by thralling
@@ -201,10 +201,6 @@ public partial class Hero : Actor
 
     public void ThrallInit(int startingAnima)
     {
-        //visual stuff
-        if(thrallTexture != null) sprite.sprite2D.Texture = thrallTexture;
-        mentalBar.Init(MeterType.Anima, startingAnima, true);
-
         //add special moves
         int heroInit = (int)heroType;
         int level = heroInit%10;
@@ -235,6 +231,10 @@ public partial class Hero : Actor
         {
             
         }
+        if(startingAnima == 0) startingAnima = maxHealth;
+        //visual stuff
+        if(thrallTexture != null) sprite.sprite2D.Texture = thrallTexture;
+        mentalBar.Init(MeterType.Anima, startingAnima, true);
     }
 
     public void PassLeader()

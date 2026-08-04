@@ -15,7 +15,7 @@ public partial class EventScene : Node2D
     public override async void _Ready()
     {
         base._Ready();
-        eventData = new EventData(RunManager.Instance.currentEvent);
+        eventData = RunManager.Instance.currentEvent;
         for(int i = 0; i< options.Length && i<eventData.options.Count; i++)
         {
             EventButton eb = options[i];

@@ -1,0 +1,7 @@
+{
+    "name": "Lost Hunter",
+    "options": [
+        { "description": "Recruit the lost hunter" },
+        { "description": "Lead the hunter home"}
+    ]
+}

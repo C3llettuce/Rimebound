@@ -18,6 +18,7 @@ config/icon="res://assets/sprites/icon.svg"
 [autoload]
 
 RunManager="*res://scripts/RunManager.cs"
+InventoryManager="*res://scripts/InventoryManager.cs"
 
 [dotnet]
 

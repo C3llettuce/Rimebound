@@ -15,6 +15,12 @@ public partial class MainMenu : Node2D
 
     public override void _PhysicsProcess(double delta)
     {
+        if(Input.IsKeyPressed(Key.G) && testingScene == null)
+        {
+            InventoryManager.Instance.AddItem(LootType.gold, 100);
+            // testingScene = (BattleScene)packedBattleScene.Instantiate();
+            // AddChild(testingScene);
+        }
         //Go to current testing battle
         if(Input.IsKeyPressed(Key.Space) && testingScene == null)
         {
@@ -31,8 +37,12 @@ public partial class MainMenu : Node2D
         else if(Input.IsKeyPressed(Key.E) && testingScene == null)
         {
             RunManager.Instance.SetCurrentEvent(Event.LostHunter);
-            GetTree().ChangeSceneToPacked(packedEventScene);
         }
+        else if(Input.IsKeyPressed(Key.Enter) && testingScene == null)
+        {
+            RunManager.Instance.StartRun();
+        }
+
 
 
         base._PhysicsProcess(delta);

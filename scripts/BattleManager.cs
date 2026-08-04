@@ -128,7 +128,7 @@ public partial class BattleManager : Node2D
     }
 
 
-    public async Task KillActor(Actor actor)
+    public void KillActor(Actor actor)
     {
         for(int i = 0; i < roundOrder.Count; i++)
         {
@@ -178,14 +178,6 @@ public partial class BattleManager : Node2D
         //for now just kills panicker
         KillActor(hero);
     }
-
-    public void ChangeSelectMode(SelectMode sm)
-    {
-        if (selectMode == sm) return;
-        selectMode = sm;
-        if(((int)sm&(int)SelectMode.Hero)!=0){}
-    }
-
     
     public void SelectCharacter(Actor selected)
     {
