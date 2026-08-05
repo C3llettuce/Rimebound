@@ -52,7 +52,8 @@ public partial class Hero : Actor
     {
         if(anima < 0) return;
         anima -= animaLoss;
-        mentalBar.UpdateMeter(-animaLoss);
+        if(animaLoss<0) mentalBar.OverwriteMeter(anima, anima);
+        else mentalBar.UpdateMeter(-animaLoss);
         if(anima <= 0) Die();
     }
 
@@ -177,8 +178,9 @@ public partial class Hero : Actor
         if(startingMorale == -1) morale = maxMorale;
         else morale = startingMorale;
         //then init thrall or set morale bar
-        if(startingAnima >= 0) ThrallInit(startingAnima);
-        if(isLeader) LeaderInit();
+        
+        if(isLeader) LeaderInit(startingAnima);
+        else if(startingAnima >= 0) ThrallInit(startingAnima);
         else mentalBar.Init(MeterType.Morale, maxMorale, morale);
         //then set health, as it can be impacted by thralling
         if(startingHealth == -1) health = maxHealth;
@@ -191,12 +193,12 @@ public partial class Hero : Actor
         
     }
 
-    public void LeaderInit()
+    public void LeaderInit(int startingAnima)
     {
         Attack enthrall = new Attack("Enthrall", bs, this, StatusType.None, 0, 63, 63, 0, 0, true);
         enthrall.DeclareSpecialTypes(AttackType.Enthrall, TargetingType.NotSelf);
         attacks.Add(enthrall);
-        if(anima<=0) Enthrall();
+        ThrallInit(startingAnima);
     }
 
     public void ThrallInit(int startingAnima)
@@ -207,9 +209,12 @@ public partial class Hero : Actor
         if(heroInit == 0)
         {
             maxHealth += 4;
-            Attack a = new Attack("Supplicate", bs, this, StatusType.None, 0, 63, 63, 0, -1, true, false, false);
-            a.DeclareSpecialTypes(AttackType.Supplicate);
-            attacks.Add(a);
+            if (!isLeader)
+            {
+                Attack a = new Attack("Supplicate", bs, this, StatusType.None, 0, 63, 63, 0, -1, true, false, false);
+                a.DeclareSpecialTypes(AttackType.Supplicate);
+                attacks.Add(a);
+            }
         }
         //Bandit tree
         else if(heroInit < 10)
@@ -231,15 +236,17 @@ public partial class Hero : Actor
         {
             
         }
-        if(startingAnima == 0) startingAnima = maxHealth;
+        health = maxHealth;
+        if(startingAnima <= 0) startingAnima = maxHealth;
         //visual stuff
         if(thrallTexture != null) sprite.sprite2D.Texture = thrallTexture;
+        anima = startingAnima;
         mentalBar.Init(MeterType.Anima, startingAnima, true);
     }
 
     public void PassLeader()
     {
-        LeaderInit();
+        LeaderInit(0);
     }
 
     //method for enthralling a unit mid combat
@@ -249,7 +256,6 @@ public partial class Hero : Actor
         int newAnima = (int)MathF.Max(health, maxHealth/2);
         anima = newAnima;
         ThrallInit(newAnima);
-        health = maxHealth;
         //implement effect on allied morale here later
     }
 

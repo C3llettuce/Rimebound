@@ -35,11 +35,7 @@ public partial class RunManager: Node2D
         rosterManager = new RosterManager();
     }
 
-    public void SaveHeroes(BattleScene bs)
-    {
-        rosterManager.SaveHeroes(bs);
-    }
-
+    
     public void StartRun()
     {
         runState = RunState.StartingEvent;
@@ -47,7 +43,7 @@ public partial class RunManager: Node2D
     }
 
     public void NextState()
-    {
+    { 
         RunState nextRunState = (RunState)((int)runState + 1);
         switch (nextRunState)
         {
@@ -55,12 +51,14 @@ public partial class RunManager: Node2D
                 SetCurrentEvent(Event.RunStart2);
                 break;
             case RunState.StartRun:
+                GD.Print("Attmping battle");
                 GetTree().ChangeSceneToPacked(packedBattleScene);
                 break;
             default:
                
                 break;
         }
+        runState = nextRunState;
     }
 
 
@@ -78,10 +76,6 @@ public partial class RunManager: Node2D
         SetCurrentEvent((Event)nextEvent);
     }
 
-    public void AddHero(HeroData hd)
-    {
-        rosterManager.AddHero(hd);
-    }
 
     public void SetCurrentEvent(Event eventType)
     {
@@ -89,20 +83,18 @@ public partial class RunManager: Node2D
         GetTree().ChangeSceneToPacked(eventScene);
     }
 
-    public void SetDebugHeroes()
-    {
-        rosterManager.SetDebugHeroes();
-    }
 
-    public void SetDebugThrallHeroes()
-    {
-        rosterManager.SetDebugHeroes2();
-    }
+    //Temp roster manager calls so I need to rewrite less code
+    public void SetDebugHeroes() { rosterManager.SetDebugHeroes(); }
 
-    public HeroData GetRandomHero()
-    {
-        return rosterManager.GetRandomHero();
-    }
+    public void SetDebugThrallHeroes() { rosterManager.SetDebugHeroes2(); }
+
+    public HeroData GetRandomHero() { return rosterManager.GetRandomHero(); }
+    public void SaveHeroes(BattleScene bs) { rosterManager.SaveHeroes(bs); }
+
+    public void AddHero(HeroData hd) { rosterManager.AddHero(hd); }
+
+    public List<Hero> LoadHeroes() { return rosterManager.LoadHeroes(); }
 
     public void DebugPrint()
     {
@@ -110,9 +102,5 @@ public partial class RunManager: Node2D
         {
             GD.Print(h.ToString());
         }
-    }
-    public List<Hero> LoadHeroes()
-    {
-        return rosterManager.LoadHeroes();
     }
 }

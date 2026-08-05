@@ -164,6 +164,7 @@ public partial class Actor : Node2D
     protected virtual void Die()
     {
         hpBar.QueueFree();
+        for(int i = icons.Count-1; i>=0; i--) icons[i].QueueFree();
         bs.KillActor(this);
         //remove from battlemanager/scene lists
         //hide and deactivate sprite + collider

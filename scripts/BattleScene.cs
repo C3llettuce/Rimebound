@@ -86,6 +86,11 @@ public partial class BattleScene : Node2D
         await battleManager.Init();
     }
 
+    private async void HeroPlacement()
+    {
+        //
+    }
+
     //place heroes onto battle scene
     private void PlaceHeroes()
     {
@@ -256,7 +261,11 @@ public partial class BattleScene : Node2D
     }
 
     //temp wincon
-    private void CombatWin(){ battleManager.isRunning = false; GD.Print("win");}
+    private void CombatWin(){ 
+        battleManager.isRunning = false; 
+        GD.Print("win");
+        RunManager.Instance.CompleteBattle();
+    }
     //temp losecon
     private void CombatLoss(){ battleManager.isRunning = false; GD.Print("loss");}
 }
