@@ -18,6 +18,7 @@ public partial class Hero : Actor
     private Texture2D defaultTexture;
     private Texture2D thrallTexture;
     public HeroData hData;
+    public int placementID;
     
     public override void _Ready()
     {

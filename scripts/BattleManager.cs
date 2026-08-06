@@ -45,6 +45,7 @@ public partial class BattleManager : Node2D
         LeaderSwap.TrySetResult(true);
         foreach (TileCollider tc in battleScene.heroGrid) gridStatuses.Add(tc.tileStatuses);
         foreach (TileCollider tc in battleScene.enemyGrid) gridStatuses.Add(tc.tileStatuses);
+        await battleScene.HeroPlacement();
         await RoundStart();
     }
 
@@ -97,6 +98,7 @@ public partial class BattleManager : Node2D
         }
         GD.Print("Combat over in " + rounds + " rounds");
     }
+
     private async Task RunRound()
     {
         foreach(List<TileStatus> tsl in gridStatuses)
@@ -184,6 +186,12 @@ public partial class BattleManager : Node2D
         //should add reset functions for deselecting actors
         if(selected is Hero)
         {
+            //for pre combat placement
+            if (battleScene.placementPhase)
+            {
+                selectedHero = selected as Hero;
+                return;
+            }
             //code for using buff attacks
             if(selectedAttack != null)
             {
@@ -252,6 +260,37 @@ public partial class BattleManager : Node2D
         if(selectedTile != null) selectedTile.sprite.Visible = false;
         selectedTile = selected;
         selectedTile.sprite.Visible = true;
+
+        if (battleScene.placementPhase && selected.isHero)
+        {
+            if(selectedHero != null)
+            {
+                if(selectedHero.position<0) battleScene.occupiedPlacementSlots[selectedHero.placementID] = false;
+                //code to swap out hero positions. should add proper swapping on battlefield instead of only back to roster
+                foreach(Hero h in battleScene.heroes) if(h.position == selected.tileID && selectedHero != h)
+                {
+                    h.position = -1;
+                    for(int i = 0; i < battleScene.occupiedPlacementSlots.Length; i++)
+                    {
+                        if (!battleScene.occupiedPlacementSlots[i])
+                        {
+                             h.placementID = i;
+                             h.GlobalPosition = battleScene.placementPositions[i];
+                             battleScene.occupiedPlacementSlots[i] = true;
+                             break;
+                        }
+                    }
+                }
+                selectedHero.GlobalPosition = battleScene.heroPositions[bitToID[selected.tileID]];
+                selectedHero.position = selected.tileID;
+                selectedHero = null;
+            }
+            //while any heroes remain in placement queue, just return
+            for(int j = 0; j< battleScene.occupiedPlacementSlots.Length; j++) if(battleScene.occupiedPlacementSlots[j]) return;
+            //otherwise complete the async task, realistically should wait for a player input here instead once this system is done
+            battleScene.Placement.TrySetResult(true);
+            return;
+        }
 
         if (isMoving)
         {

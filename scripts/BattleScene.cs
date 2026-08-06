@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Intrinsics.X86;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 //Used to track various lists of actors as well as set up UI events
@@ -16,14 +17,18 @@ public partial class BattleScene : Node2D
     [Export] private RichTextLabel attackDescription;
     public ActionUI passUI;
     public bool freeSelect = true;
+    public bool placementPhase = true;
     public List<Hero> heroes; public List<Enemy> enemies;
     public List<TileCollider> heroGrid, enemyGrid;
     public int resolutionScale = 1;
     public Vector2 baseResolution = new Vector2(0,0);
-    Vector2[] heroPositions = {new Vector2(-215, -10), new Vector2(-215, 145), new Vector2(-365, -10), new Vector2(-365, 145), new Vector2(-515, -10), new Vector2(-515, 145)};
+    public Vector2[] heroPositions = {new Vector2(-215, -10), new Vector2(-215, 145), new Vector2(-365, -10), new Vector2(-365, 145), new Vector2(-515, -10), new Vector2(-515, 145)};
     Vector2[] enemyPositions = {new Vector2(215, -10), new Vector2(215, 145), new Vector2(365, -10), new Vector2(365, 145), new Vector2(515, -10), new Vector2(515, 145)};
+    public Vector2[] placementPositions = {new Vector2(-515, -220), new Vector2(-365, -220), new Vector2(-215, -220), new Vector2(215, -220), new Vector2(365, -220), new Vector2(515, -220)};
+    public bool[] occupiedPlacementSlots = {false, false, false, false, false, false};
     int yPosOffset = -50;
     public BattleManager battleManager;
+    public TaskCompletionSource<bool> Placement = new TaskCompletionSource<bool>();
 
     public bool ClickEventCheck(InputEvent e)
     {
@@ -86,25 +91,29 @@ public partial class BattleScene : Node2D
         await battleManager.Init();
     }
 
-    private async void HeroPlacement()
+    public async Task HeroPlacement()
     {
         //
+        await Placement.Task;
+        placementPhase = false;
     }
 
     //place heroes onto battle scene
     private void PlaceHeroes()
     {
         GD.Print("hi");
-    //make this pull from a roster later
         var heroScene = GD.Load<PackedScene>("res://scenes/battles/hero.tscn");
         List<Hero> tempH = RunManager.Instance.LoadHeroes();
-        foreach(Hero h in tempH) AddChild(h);
 
+        //initalize heroes and put them in the placement queue at top of screen
         for(int i = 0; i<tempH.Count && i<6; i++)
         {
+            AddChild(tempH[i]);
             heroes.Add(tempH[i]);
-            tempH[i].Init((int)MathF.Pow(2,i), this);
-            tempH[i].GlobalPosition = heroPositions[i];
+            occupiedPlacementSlots[i] = true;
+            tempH[i].Init(-1, this);
+            tempH[i].GlobalPosition = placementPositions[i];
+            tempH[i].placementID = i;
             GD.Print("adding new hero");
         }
 
